@@ -1,0 +1,2 @@
+{'*',       [{outdir, '../ebin_tests'},
+             {i, "include/"}]}.

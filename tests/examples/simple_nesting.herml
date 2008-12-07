@@ -1,0 +1,16 @@
+This is a line.
+  This is another line.
+  This line is on the same line as the other one.
+    This is the innermost one.
+     This is a continuation.
+
+This is the second group.
+  This is another line in the second group.
+  This line is on the same line in the second group.
+    This is the innermost line of the second group.
+
+Third group one.
+Third group two.
+
+Third group three.
+  Third group four.
