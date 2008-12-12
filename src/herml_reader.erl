@@ -29,7 +29,6 @@ parse_nodes(Contents) ->
   P1 = parse(Lines),
   P2 = fix_continuations(P1, []),
   MaxDepth = find_max_depth(P2, 0),
-  io:format("MaxDepth: ~p~n", [MaxDepth]),
   rollup(lists:reverse(P2), MaxDepth).
 
 rollup(Tree, -1) ->
@@ -96,7 +95,7 @@ classify(Line) ->
     0 ->
       {node, Indent div 2, Line, []};
     _ ->
-      {cont, Line}
+      throw({error, bad_indent, Line})
   end.
 
 count_indent([$\s|T], Count) ->

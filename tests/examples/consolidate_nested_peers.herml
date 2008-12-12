@@ -1,3 +1,0 @@
-#sidebar
-  #latest_entries[{class, "little"},
-                  {bgcolor, "white"}]
