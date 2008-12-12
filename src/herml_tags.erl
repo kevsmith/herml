@@ -2,7 +2,7 @@
 
 -author("kevin@hypotheticalabs.com").
 
--include("tree.hrl").
+-include("herml_tree.hrl").
 
 %% !
 -define(FUNCALL_TAG, 33).
