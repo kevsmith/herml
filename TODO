@@ -1,0 +1,3 @@
+* Add a real front-end to manage and serve herml templates
+* Add iteration over variables
+* Add the "alligator" operators (<>)

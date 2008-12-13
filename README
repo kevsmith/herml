@@ -1,0 +1,39 @@
+Welcome to herml, the haml-like, templating language!
+
+Building:
+1) Clone the herml repo from Github
+2) Run make
+3) Put the herml/ebin directory somewhere on your code path:
+  3a) Symlink the top-level herml directory into your $ERLANG_HOME/lib directory
+                                -or-
+  3b) Use the -pz or -pa switches on erl to place herml/ebin onto your code path
+
+Running tests:
+1) Run make clean tests
+
+
+Using herml:
+The interface for herml is a work-in-progress currently. Eventually herml will
+sport a slick n' simple interface but, for now, its' a two step process:
+
+1) 'Compile' your herml template using herml_parser:
+
+1> CompiledTemplate = herml_parser:file("/path/to/template/file.herml").
+
+Note: You can cache the compiled template and use it over and over.
+
+2) 'Execute' the compiled template using herml_htmlizer:
+
+2> Result = herml_htmlizer:render(CompiledTemplate, Env).
+
+Note: Env is a proplist containing the execution environment for the
+template. herml expects all variable names to be Erlang strings. For
+example, here's a valid environment proplists: [{"UserName", "herml"}].
+
+The UserName variable would be referenced from herml as @UserName.
+
+Another note: herml_htmlizer returns iolists when it executes templates.
+This is for efficiency reasons. If you want to view the template output
+as a standard string, you can use the io module to flatten the iolist: 
+
+3> io:format("~s", [Result]). 
