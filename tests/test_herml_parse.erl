@@ -37,7 +37,12 @@ attr_list_test_() ->
    ?_assertMatch({ok, {tag_decl, [{tag_name, "td"},
                                   {id, "foo123"},
                                   {width, "200"},
-                                  {color, "red"}]}}, lex_and_parse("%td#foo123[{width, '200'}, {color, 'red'}]"))].
+                                  {color, "red"}]}}, lex_and_parse("%td#foo123[{width, '200'}, {color, 'red'}]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "td"},
+                                  {id, "foo123"},
+                                  {width, "200%"},
+                                  {color, "red"}]}}, lex_and_parse("%td#foo123[{width, '200%'}, {color, 'red'}]"))].
+
 
 default_div_test_() ->
   [?_assertMatch({ok, {tag_decl, [{tag_name, "div"},

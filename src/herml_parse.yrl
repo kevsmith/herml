@@ -14,6 +14,7 @@ string -> quote quote : {string, ""}.
 
 char_list -> char : unwrap_char('$1').
 char_list -> number :  number_to_list('$1').
+char_list -> tag_start : "%".
 char_list -> char char_list : unwrap_char('$1') ++ '$2'.
 char_list -> number char_list : number_to_list('$1') ++ '$2'.
 char_list -> tag_start char_list : "%" ++ '$2'.
