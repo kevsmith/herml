@@ -29,7 +29,19 @@ parse_nodes(Contents) ->
   P1 = parse(Lines),
   P2 = fix_continuations(P1, []),
   MaxDepth = find_max_depth(P2, 0),
-  rollup(lists:reverse(P2), MaxDepth).
+  N = rollup(lists:reverse(P2), MaxDepth),
+  clean(N, []).
+
+clean([{node, _, Text, Children}|T], Accum) ->
+  C = case length(Children) of
+        0 ->
+          [];
+        _ ->
+          clean(Children, [])
+      end,
+  clean(T, [{Text, C}|Accum]);
+clean([], Accum) ->
+  lists:reverse(Accum).
 
 rollup(Tree, -1) ->
   lists:reverse(Tree);
