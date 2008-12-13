@@ -26,7 +26,7 @@ parse(Contents) ->
 
 parse([{Depth, Text, []}|T], Accum) ->
   case herml_scan:string(Text) of
-    {error, _} ->
+    {error, _, _} ->
       parse(T, [{Depth, Text, []}|Accum]);
     {ok, Tokens, _} ->
       case herml_parse:parse(Tokens) of
@@ -39,7 +39,7 @@ parse([{Depth, Text, []}|T], Accum) ->
 parse([{Depth, Text, Children}|T], Accum) ->
   C = parse(Children, []),
   case herml_scan:string(Text) of
-    {error, _} ->
+    {error, _, _} ->
       parse(T, [{Depth, Text, C}|Accum]);
     {ok, Tokens, _} ->
       case herml_parse:parse(Tokens) of
