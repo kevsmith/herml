@@ -1,28 +1,28 @@
 Nonterminals
 tag_decl id_attr class_attr attr_list attrs attr string
-char_list name name_list.
+chr_list name name_list.
 
 Terminals
 tag_start class_start id_start number
 lcurly rcurly lbrace rbrace lparen
-rparen at comma quote char.
+rparen at comma quote chr.
 
 Rootsymbol tag_decl.
 
-string -> quote char_list quote : {string, '$2'}.
+string -> quote chr_list quote : {string, '$2'}.
 string -> quote quote : {string, ""}.
 
-char_list -> char : unwrap_char('$1').
-char_list -> number :  number_to_list('$1').
-char_list -> tag_start : "%".
-char_list -> char char_list : unwrap_char('$1') ++ '$2'.
-char_list -> number char_list : number_to_list('$1') ++ '$2'.
-char_list -> tag_start char_list : "%" ++ '$2'.
+chr_list -> chr : unwrap_char('$1').
+chr_list -> number :  number_to_list('$1').
+chr_list -> tag_start : "%".
+chr_list -> chr chr_list : unwrap_char('$1') ++ '$2'.
+chr_list -> number chr_list : number_to_list('$1') ++ '$2'.
+chr_list -> tag_start chr_list : "%" ++ '$2'.
 
 name -> name_list : {name, '$1'}.
 
-name_list -> char : unwrap_char('$1').
-name_list -> char name_list : unwrap_char('$1') ++ '$2'.
+name_list -> chr : unwrap_char('$1').
+name_list -> chr name_list : unwrap_char('$1') ++ '$2'.
 
 id_attr -> id_start name : unwrap_label_attr(id, '$2').
 id_attr -> id_start number : unwrap_label_attr(id, '$2').
@@ -67,7 +67,7 @@ Erlang code.
 unwrap_label_attr(Label, {_, Value}) ->
   {Label, Value}.
 
-unwrap_char({char, _, Value}) ->
+unwrap_char({chr, _, Value}) ->
   Value.
 
 unwrap_string({string, Value}) ->

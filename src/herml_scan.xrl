@@ -11,7 +11,7 @@ Rules.
 \.                      :       {token, {class_start, TokenLine, TokenChars}}.
 #                       :       {token, {id_start, TokenLine, TokenChars}}.
 {D}+                    :       {token, {number, TokenLine, list_to_integer(TokenChars)}}.
-{STRCHAR}+		:	{token, {char, TokenLine, TokenChars}}.
+{STRCHAR}+		:	{token, {chr, TokenLine, TokenChars}}.
 {                       :       {token, {lcurly, TokenLine, TokenChars}}.
 }                       :       {token, {rcurly, TokenLine, TokenChars}}.
 \[                      :       {token, {lbrace, TokenLine, TokenChars}}.

@@ -32,14 +32,14 @@ parse_nodes(Contents) ->
   N = rollup(lists:reverse(P2), MaxDepth),
   clean(N, []).
 
-clean([{node, _, Text, Children}|T], Accum) ->
+clean([{node, Depth, Text, Children}|T], Accum) ->
   C = case length(Children) of
         0 ->
           [];
         _ ->
           clean(Children, [])
       end,
-  clean(T, [{Text, C}|Accum]);
+  clean(T, [{Depth, Text, C}|Accum]);
 clean([], Accum) ->
   lists:reverse(Accum).
 
