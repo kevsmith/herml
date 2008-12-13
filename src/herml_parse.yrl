@@ -1,13 +1,16 @@
 Nonterminals
 tag_decl id_attr class_attr attr_list attrs attr string
-chr_list name name_list.
+chr_list name name_list var_ref fun_call.
 
 Terminals
 tag_start class_start id_start number
 lcurly rcurly lbrace rbrace lparen
-rparen at comma quote chr.
+rparen at comma quote chr colon.
 
 Rootsymbol tag_decl.
+
+var_ref -> at name : {var_ref, unwrap_name('$2')}.
+fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4')}.
 
 string -> quote chr_list quote : {string, '$2'}.
 string -> quote quote : {string, ""}.
@@ -30,12 +33,17 @@ id_attr -> id_start number : unwrap_label_attr(id, '$2').
 class_attr -> class_start name : unwrap_label_attr(class, '$2').
 
 attr_list -> lbrace rbrace : [].
+attr_list -> lbrace fun_call rbrace : ['$2'].
 attr_list -> lbrace attrs rbrace : '$2'.
 
 attrs -> attr : ['$1'].
 attrs -> attr comma attrs : ['$1'] ++ '$3'.
 
 attr -> lcurly name comma string rcurly : {name_to_atom('$2'), unwrap_string('$4')}.
+attr -> lcurly name comma var_ref rcurly : {name_to_atom('$2'), '$4'}.
+
+%% raw variable ref
+tag_decl -> var_ref : '$1'.
 
 %% named tags
 tag_decl -> tag_start name : {tag_decl, [unwrap_label_attr(tag_name, '$2')]}.
@@ -71,6 +79,9 @@ unwrap_char({chr, _, Value}) ->
   Value.
 
 unwrap_string({string, Value}) ->
+  Value.
+
+unwrap_name({name, Value}) ->
   Value.
 
 number_to_list({number, _, Value}) ->

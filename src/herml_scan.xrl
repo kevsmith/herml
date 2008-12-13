@@ -16,11 +16,10 @@ Rules.
 }                       :       {token, {rcurly, TokenLine, TokenChars}}.
 \[                      :       {token, {lbrace, TokenLine, TokenChars}}.
 \]                      :       {token, {rbrace, TokenLine, TokenChars}}.
-\(                      :       {token, {lparen, TokenLine, TokenChars}}.
-\)                      :       {token, {rparen, TokenLine, TokenChars}}.
 \@                      :       {token, {at, TokenLine, TokenChars}}.
 \,                      :       {token, {comma, TokenLine, TokenChars}}.
 '			: 	{token, {quote, TokenLine, TokenChars}}.
+\:			:	{token, {colon, TokenLine, TokenChars}}.
 
 Erlang code.
 %% Not used

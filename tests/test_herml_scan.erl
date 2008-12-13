@@ -18,4 +18,5 @@ tokenizing_test_() ->
    ?_assertMatch({ok, [{rbrace, _, _}], _}, herml_scan:string("]")),
    ?_assertMatch({ok, [{at, _, _}], _}, herml_scan:string("@")),
    ?_assertMatch({ok, [{comma, _, _}], _}, herml_scan:string(",")),
-   ?_assertMatch({ok, [{number, _, 123}], _}, herml_scan:string("123"))].
+   ?_assertMatch({ok, [{number, _, 123}], _}, herml_scan:string("123")),
+   ?_assertMatch({ok, [{colon, _, ":"}], _}, herml_scan:string(":"))].
