@@ -5,7 +5,7 @@ chr_list name name_list var_ref fun_call.
 Terminals
 tag_start class_start id_start number
 lcurly rcurly lbrace rbrace lparen
-rparen at comma quote chr colon.
+rparen at comma quote chr colon slash.
 
 Rootsymbol tag_decl.
 
@@ -52,12 +52,26 @@ tag_decl -> tag_start name class_attr: {tag_decl, [unwrap_label_attr(tag_name, '
 tag_decl -> tag_start name id_attr class_attr : {tag_decl, [unwrap_label_attr(tag_name, '$2'), '$3', '$4']}.
 tag_decl -> tag_start name class_attr id_attr : {tag_decl, [unwrap_label_attr(tag_name, '$2'), '$4', '$3']}.
 
+%% "singleton" named tags
+tag_decl -> tag_start name slash : {tag_decl, [{singleton, true}, unwrap_label_attr(tag_name, '$2')]}.
+tag_decl -> tag_start name id_attr slash : {tag_decl, [{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$3']}.
+tag_decl -> tag_start name class_attr slash : {tag_decl, [{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$3']}.
+tag_decl -> tag_start name id_attr class_attr slash : {tag_decl, [{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$3', '$4']}.
+tag_decl -> tag_start name class_attr id_attr slash : {tag_decl, [{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$4', '$3']}.
+
 %% named tags w/attribute lists
 tag_decl -> tag_start name attr_list : {tag_decl, lists:append([unwrap_label_attr(tag_name, '$2')], '$3')}.
 tag_decl -> tag_start name id_attr attr_list : {tag_decl, lists:append([unwrap_label_attr(tag_name, '$2'), '$3'], '$4')}.
 tag_decl -> tag_start name class_attr attr_list: {tag_decl, lists:append([unwrap_label_attr(tag_name, '$2'), '$3'], '$4')}.
 tag_decl -> tag_start name id_attr class_attr attr_list : {tag_decl, lists:append([unwrap_label_attr(tag_name, '$2'), '$3', '$4'], '$5')}.
 tag_decl -> tag_start name class_attr id_attr attr_list : {tag_decl, lists:append([unwrap_label_attr(tag_name, '$2'), '$4', '$3'], '$5')}.
+
+%% "singleton" named tags w/attribute lists
+tag_decl -> tag_start name attr_list slash : {tag_decl, lists:append([{singleton, true}, unwrap_label_attr(tag_name, '$2')], '$3')}.
+tag_decl -> tag_start name id_attr attr_list slash : {tag_decl, lists:append([{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$3'], '$4')}.
+tag_decl -> tag_start name class_attr attr_list slash : {tag_decl, lists:append([{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$3'], '$4')}.
+tag_decl -> tag_start name id_attr class_attr attr_list slash : {tag_decl, lists:append([{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$3', '$4'], '$5')}.
+tag_decl -> tag_start name class_attr id_attr attr_list slash : {tag_decl, lists:append([{singleton, true}, unwrap_label_attr(tag_name, '$2'), '$4', '$3'], '$5')}.
 
 %% default div tags
 tag_decl -> id_attr : {tag_decl, [{tag_name, "div"}, '$1']}.

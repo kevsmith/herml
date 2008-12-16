@@ -1,0 +1,15 @@
+<div id="main">
+ <span id="message">
+  <table width="100%">
+   <tr>
+    <td>
+     <hr />
+          Hello, world
+    </td>
+    <td>
+          This is a test.
+    </td>
+   </tr>
+  </table>
+ </span>
+</div>

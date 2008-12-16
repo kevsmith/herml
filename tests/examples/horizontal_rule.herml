@@ -1,0 +1,9 @@
+#main
+  %span#message
+    %table[{width, '100%'}]
+      %tr
+        %td
+          %hr/
+          Hello, world
+        %td
+          This is a test.

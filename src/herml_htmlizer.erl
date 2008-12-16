@@ -2,6 +2,8 @@
 
 -export([render/1, render/2]).
 
+-define(RESERVED_TAG_ATTRS, [tag_name, singleton]).
+
 render(Template) ->
   render(Template, []).
 
@@ -10,7 +12,7 @@ render(Template, Env) ->
 
 %% Internal functions
 render([{Depth, {tag_decl, Attrs}, []}|T], Env, Accum) ->
-  render(T, Env, [render_tag(Depth, Attrs, "/>", Env)|Accum]);
+  render(T, Env, [render_tag(Depth, Attrs, detect_terminator(Attrs), Env)|Accum]);
 
 render([{Depth, {tag_decl, Attrs}, Children}|T], Env, Accum) ->
   B1 = render_tag(Depth, Attrs, ">", Env),
@@ -53,8 +55,6 @@ create_whitespace(0, Accum) ->
 create_whitespace(Depth, Accum) ->
   create_whitespace(Depth - 1, [" "|Accum]).
 
-render_attr({tag_name, _}, _Env, Accum) ->
-  Accum;
 render_attr({fun_call, Module, Fun}, Env, Accum) ->
   R1 = Module:Fun(Env),
   render_attrs(R1, Env) ++ Accum;
@@ -62,7 +62,12 @@ render_attr({fun_call, Module, Fun}, Env, Accum) ->
 render_attr({Name, {var_ref, VarName}}, Env, Accum) ->
   Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ lookup_var(VarName, Env) ++ "\"";
 render_attr({Name, Value}, _Env, Accum) ->
-  Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ Value ++ "\"".
+  case lists:member(Name, ?RESERVED_TAG_ATTRS) of
+    true ->
+      Accum;
+    false ->
+      Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ Value ++ "\""
+  end.
 
 lookup_var(VarName, Env) ->
   format(proplists:get_value(VarName, Env, ""), Env).
@@ -74,3 +79,11 @@ format(V, _Env) when is_list(V) ->
   V;
 format(V, _Env) ->
   lists:flatten(io_lib:format("~p", V)).
+
+detect_terminator(Attrs) ->
+  case proplists:get_value(singleton, Attrs, false) of
+    true ->
+      "/>";
+    false ->
+      ">"
+  end.

@@ -20,6 +20,7 @@ Rules.
 \,                      :       {token, {comma, TokenLine, TokenChars}}.
 '			: 	{token, {quote, TokenLine, TokenChars}}.
 \:			:	{token, {colon, TokenLine, TokenChars}}.
+\/			:	{token, {slash, TokenLine, TokenChars}}.
 
 Erlang code.
 %% Not used

@@ -13,7 +13,9 @@ default_attr(_) ->
 render_test_() ->
   [check("tests/examples/hello_world"),
    check("tests/examples/message", [{"Message", "This is a test"}]),
-   check("tests/examples/default_attr")].
+   check("tests/examples/message2", [{"Message", "This is a test"}]),
+   check("tests/examples/default_attr"),
+   check("tests/examples/horizontal_rule")].
 
 check(FileName) ->
   fun() ->
