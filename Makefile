@@ -24,11 +24,14 @@ tools: ebin_tools
 	cd tools/src;erl -make
 	cp tools/src/leexinc.hrl tools/ebin
 
-src_src: ebin src/herml_parse.erl
+src_src: ebin src/herml_parse.erl src/herml.app
 	cd src;erl -make
 
 src_tests: ebin_tests
 	cd tests;erl -make
+
+src/herml.app: ebin
+	cp src/herml.app ebin
 
 src/herml_scan.erl: tools
 	${ERL} -pa tools/ebin -noshell -s init stop -eval 'leex:file("src/herml_scan.xrl", [{outdir, "src"}])'
