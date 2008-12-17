@@ -12,7 +12,13 @@ render(Template, Env) ->
 
 %% Internal functions
 render([{Depth, {tag_decl, Attrs}, []}|T], Env, Accum) ->
-  render(T, Env, [render_tag(Depth, Attrs, detect_terminator(Attrs), Env)|Accum]);
+  CloseTag = case detect_terminator(Attrs) of
+    ">" ->
+      render_inline_end_tag(Attrs);
+    _ ->
+      "\n"
+  end,
+  render(T, Env, [render_inline_tag(Depth, Attrs, detect_terminator(Attrs), Env) ++ CloseTag|Accum]);
 
 render([{Depth, {tag_decl, Attrs}, Children}|T], Env, Accum) ->
   B1 = render_tag(Depth, Attrs, ">", Env),
@@ -40,8 +46,17 @@ render_tag(Depth, Attrs, Terminator, Env) ->
     render_attrs(Attrs, Env) ++
     Terminator ++ "\n".
 
+render_inline_tag(Depth, Attrs, Terminator, Env) ->
+  create_whitespace(Depth) ++ "<" ++
+    proplists:get_value(tag_name, Attrs) ++
+    render_attrs(Attrs, Env) ++
+    Terminator.
+
 render_end_tag(Depth, Attrs) ->
   create_whitespace(Depth) ++ "</" ++ proplists:get_value(tag_name, Attrs) ++ ">\n".
+
+render_inline_end_tag(Attrs) ->
+  "</" ++ proplists:get_value(tag_name, Attrs) ++ ">\n".
 
 render_attrs(Attrs, Env) ->
   lists:foldl(fun(Attr, Accum) ->
@@ -53,7 +68,7 @@ create_whitespace(Depth) ->
 create_whitespace(0, Accum) ->
   lists:flatten(Accum);
 create_whitespace(Depth, Accum) ->
-  create_whitespace(Depth - 1, [" "|Accum]).
+  create_whitespace(Depth - 1, ["  "|Accum]).
 
 render_attr({fun_call, Module, Fun}, Env, Accum) ->
   R1 = Module:Fun(Env),
@@ -83,7 +98,7 @@ format(V, _Env) ->
 detect_terminator(Attrs) ->
   case proplists:get_value(singleton, Attrs, false) of
     true ->
-      "/>";
+      " />";
     false ->
       ">"
   end.

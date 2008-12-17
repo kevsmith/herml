@@ -1,6 +1,6 @@
 <html>
- <body>
-  <div id="foo">
-  This is a test
- </body>
+  <body>
+    <div id="foo"></div>
+    This is a test
+  </body>
 </html>

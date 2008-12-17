@@ -15,29 +15,21 @@ render_test_() ->
    check("tests/examples/message", [{"Message", "This is a test"}]),
    check("tests/examples/message2", [{"Message", "This is a test"}]),
    check("tests/examples/default_attr"),
-   check("tests/examples/horizontal_rule")].
+   check("tests/examples/horizontal_rule"),
+   check("tests/examples/close_empty")].
 
 check(FileName) ->
-  fun() ->
-      CR = read_file(FileName),
-      PR = render_file(FileName),
-      ?_assertMatch(CR, PR) end.
+  check(FileName, []).
 
 check(FileName, Env) ->
-  fun() ->
-      CR = read_file(FileName),
-      PR = render_file(FileName, Env),
-      ?_assertMatch(CR, PR) end.
-
+  CR = read_file(FileName),
+  PR = render_file(FileName, Env),
+  ?_assertEqual(CR, PR).
 
 read_file(File) ->
   {ok, C} = file:read_file(File ++ ".render"),
   binary_to_list(C).
 
-render_file(File) ->
-  C = herml_parser:file(File ++ ".herml"),
-  herml_htmlizer:render(C).
-
 render_file(File, Env) ->
   C = herml_parser:file(File ++ ".herml"),
-  herml_htmlizer:render(C, Env).
+  lists:flatten(herml_htmlizer:render(C, Env)).

@@ -1,7 +1,7 @@
 <html>
- <body>
-  <div color="red" class="foo" id="foo">
-   Testing 123
-  </div>
- </body>
+  <body>
+    <div color="red" class="foo" id="foo">
+      Testing 123
+    </div>
+  </body>
 </html>
