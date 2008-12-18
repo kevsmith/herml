@@ -28,8 +28,24 @@ render([{Depth, {tag_decl, Attrs}, Children}|T], Env, Accum) ->
 render([{Depth, {var_ref, VarName}, []}|T], Env, Accum) ->
   render(T, Env, [create_whitespace(Depth) ++ lookup_var(VarName, Env) ++ "\n"|Accum]);
 
+
 render([{_, {var_ref, VarName}, Children}|T], Env, Accum) ->
   render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env) |Accum]);
+
+render([{_, {doctype, "Transitional"}, []}|T], Env, Accum) ->
+  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"|Accum]);
+
+render([{_, {doctype, "Strict"}, []}|T], Env, Accum) ->
+  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"|Accum]);
+
+render([{_, {doctype, "1.1"}, []}|T], Env, Accum) ->
+  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"|Accum]);
+
+render([{_, {doctype, "XML"}, []}|T], Env, Accum) ->
+  render(T, Env, ["<?xml version='1.0' encoding='utf-8' ?>\n"|Accum]);
+
+render([{_, {doctype, "Frameset"}, []}|T], Env, Accum) ->
+  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n"|Accum]);
 
 render([{_, Text, []}|T], Env, Accum) ->
   render(T, Env, [Text ++ "\n"|Accum]);
