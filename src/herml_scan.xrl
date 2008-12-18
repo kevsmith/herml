@@ -3,6 +3,7 @@ Definitions.
 WS  = [\s|\t|\n|\r]
 D = [0-9]
 STRCHAR = [a-z|A-Z|0-9|_|\-]
+BANG = [!]
 
 Rules.
 
@@ -21,6 +22,8 @@ Rules.
 '			: 	{token, {quote, TokenLine, TokenChars}}.
 \:			:	{token, {colon, TokenLine, TokenChars}}.
 \/			:	{token, {slash, TokenLine, TokenChars}}.
+{BANG}{BANG}{BANG}      :       {token, {doctype_start, TokenLine, TokenChars}}.
+
 
 Erlang code.
 %% Not used

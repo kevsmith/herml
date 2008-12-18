@@ -6,7 +6,7 @@ class_list.
 Terminals
 tag_start class_start id_start number
 lcurly rcurly lbrace rbrace
-at comma quote chr colon slash.
+at comma quote chr colon slash doctype_start.
 
 Rootsymbol tag_decl.
 
@@ -22,6 +22,10 @@ chr_list -> tag_start : "%".
 chr_list -> chr chr_list : unwrap_char('$1') ++ '$2'.
 chr_list -> number chr_list : number_to_list('$1') ++ '$2'.
 chr_list -> tag_start chr_list : "%" ++ '$2'.
+chr_list -> class_start : ".".
+chr_list -> class_start chr_list : "." ++ '$2'.
+chr_list -> id_start : "#".
+chr_list -> id_start chr_list : "#" ++ '$2'.
 
 name -> name_list : {name, '$1'}.
 
@@ -45,6 +49,10 @@ attr -> lcurly name comma var_ref rcurly : {name_to_atom('$2'), '$4'}.
 
 %% raw variable ref
 tag_decl -> var_ref : '$1'.
+
+%% doctype selector
+tag_decl -> doctype_start : {doctype, "Transitional"}.
+tag_decl -> doctype_start chr_list : {doctype, '$2'}.
 
 %% named tags
 tag_decl -> tag_start name : {tag_decl, [unwrap_label_attr(tag_name, '$2')]}.
