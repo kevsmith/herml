@@ -20,16 +20,17 @@ file(Filename) when is_list(Filename) ->
 
 -spec(string/1 :: (Template :: binary()) -> list() | {'error', string() | atom()}).
 string(Template) when is_binary(Template) ->
+  string(binary_to_list(Template));
+string(Template) when is_list(Template) ->
   parse_nodes(Template).
 
 %% Internal functions
 
 parse_nodes(Contents) ->
-  Lines = string:tokens(binary_to_list(Contents), ?EOLS),
+  Lines = string:tokens(Contents, ?EOLS),
   P1 = parse(Lines),
-  P2 = fix_continuations(P1, []),
-  MaxDepth = find_max_depth(P2, 0),
-  N = rollup(lists:reverse(P2), MaxDepth),
+  MaxDepth = find_max_depth(P1, 0),
+  N = rollup(lists:reverse(P1), MaxDepth),
   clean(N, []).
 
 clean([{node, Depth, Text, Children}|T], Accum) ->
@@ -76,17 +77,6 @@ find_max_depth([{node, Level, _, _}|T], Max) ->
   end;
 find_max_depth([], Max) ->
   Max.
-
-fix_continuations([H|T], Accum) ->
-  case H of
-    {cont, L} ->
-      [{node, Indent, L1, Children}|TA] = Accum,
-      fix_continuations(T, [{node, Indent, L1 ++ L, Children}|TA]);
-    _ ->
-      fix_continuations(T, [H|Accum])
-  end;
-fix_continuations([], Accum) ->
-  lists:reverse(Accum).
 
 parse(Lines) ->
   parse(Lines, []).

@@ -37,16 +37,15 @@ parse([{Depth, Text, []}|T], Accum) ->
       end
   end;
 parse([{Depth, Text, Children}|T], Accum) ->
-  C = parse(Children, []),
   case herml_scan:string(Text) of
     {error, _, _} ->
-      parse(T, [{Depth, Text, C}|Accum]);
+      throw({invalid_nesting, Text});
     {ok, Tokens, _} ->
       case herml_parse:parse(Tokens) of
         {ok, Stmt} ->
-          parse(T, [{Depth, Stmt, C}|Accum]);
+          parse(T, [{Depth, Stmt, parse(Children, [])}|Accum]);
         {error, _} ->
-          parse(T, [{Depth, Text, Children}|Accum])
+          throw({invalid_nesting, Text})
       end
   end;
 parse([], Accum) ->
