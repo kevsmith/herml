@@ -17,6 +17,8 @@ ebin:
 ebin_tests:
 	mkdir ebin_tests
 
+special: tools src/herml_scan.erl src/herml_parse.erl
+
 ebin_tools:
 	mkdir -p tools/ebin
 
