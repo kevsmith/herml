@@ -4,10 +4,11 @@
 
 -behaviour(gen_server).
 
+-include_lib("kernel/include/file.hrl").
 -include_lib("stdlib/include/ms_transform.hrl").
 
 %% API
--export([start_link/2, execute_template/2, execute_template/3]).
+-export([start_link/2, start_link/3, execute_template/2, execute_template/3]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -15,16 +16,21 @@
 
 -record(state,
         {root_dir,
-         table_name}).
+         table_name,
+         devmode}).
 
 -record(cache_entry,
         {file_path,
-         timestamp,
+         fingerprint,
          template}).
 
 start_link(Name, RootDir) when is_atom(Name),
                                is_list(RootDir) ->
-  gen_server:start_link({local, Name}, ?MODULE, [Name, RootDir], []).
+  start_link(Name, RootDir, []).
+
+start_link(Name, RootDir, Options) when is_atom(Name),
+                                        is_list(RootDir) ->
+  gen_server:start_link({local, Name}, ?MODULE, [Name, RootDir, Options], []).
 
 execute_template(ManagerName, TemplatePath) ->
   execute_template(ManagerName, TemplatePath, []).
@@ -32,7 +38,7 @@ execute_template(ManagerName, TemplatePath) ->
 execute_template(ManagerName, TemplatePath, Env) ->
   gen_server:call(ManagerName, {exec_template, TemplatePath, Env}).
 
-init([EtsTableName, RootDir]) ->
+init([EtsTableName, RootDir, Options]) ->
   case verify_dir(RootDir) of
     {error, Reason} ->
       {stop, Reason};
@@ -40,7 +46,8 @@ init([EtsTableName, RootDir]) ->
       process_flag(trap_exit, true),
       ets:new(EtsTableName, [private, named_table, {keypos, 2}]),
       {ok, #state{root_dir=FinalRootDir,
-                  table_name=EtsTableName}}
+                  table_name=EtsTableName,
+                  devmode=proplists:get_value(development, Options, false)}}
   end.
 
 handle_call({exec_template, TemplatePath, Env}, From, State) ->
@@ -50,8 +57,20 @@ handle_call({exec_template, TemplatePath, Env}, From, State) ->
                 load_and_store(State#state.table_name,
                                State#state.root_dir,
                                TemplatePath);
-              [[C, _], '$end_of_table'] ->
-                C
+              {[[C, Fingerprint]], '$end_of_table'} ->
+                if
+                  State#state.devmode ->
+                    case read_fingerprint(State#state.root_dir, TemplatePath) /= Fingerprint of
+                      true ->
+                        load_and_store(State#state.table_name,
+                                       State#state.root_dir,
+                                       TemplatePath);
+                      false ->
+                        C
+                    end;
+                  true ->
+                    C
+                end
             end,
   case Content of
     {error, _} ->
@@ -83,12 +102,12 @@ exec_template(Template, Env, From) ->
 
 load_and_store(TableName, RootDir, TemplatePath) ->
   case fetch_file(RootDir, TemplatePath) of
-    {ok, Content} ->
+    {ok, Fingerprint, Content} ->
       case herml_parser:string(Content) of
         {error, Error} ->
           {error, Error};
         CT ->
-          ets:insert(TableName, #cache_entry{file_path=TemplatePath, timestamp=0, template=CT}),
+          ets:insert(TableName, #cache_entry{file_path=TemplatePath, fingerprint=Fingerprint, template=CT}),
           CT
       end;
     Error ->
@@ -96,18 +115,18 @@ load_and_store(TableName, RootDir, TemplatePath) ->
   end.
 
 fetch_file(RootDir, FilePath) ->
-  file:read_file(RootDir ++ FilePath).
+  {ok, Content} = file:read_file(filename:join(RootDir, FilePath)),
+  {ok, read_fingerprint(RootDir, FilePath), Content}.
+
+read_fingerprint(RootDir, FilePath) ->
+  {ok, FileInfo} = file:read_file_info(filename:join(RootDir, FilePath)),
+  #file_info{mtime=MTime, size=Size} = FileInfo,
+  calendar:datetime_to_gregorian_seconds(MTime) + Size.
 
 verify_dir(D) ->
-  Dir = case string:right(D, 1) of
-          "/" ->
-            D;
-          _ ->
-            D ++ "/"
-        end,
-  case filelib:is_dir(Dir) of
+  case filelib:is_dir(D) of
     true ->
-      {ok, Dir};
+      {ok, D};
     false ->
-      {error, {bad_dir, Dir}}
+      {error, {bad_dir, D}}
   end.
