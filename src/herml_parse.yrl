@@ -5,7 +5,7 @@ class_list.
 
 Terminals
 tag_start class_start id_start number
-lcurly rcurly lbrace rbrace
+lcurly rcurly lbrace rbrace lparen rparen
 at comma quote chr colon slash doctype_start.
 
 Rootsymbol tag_decl.
@@ -26,6 +26,11 @@ chr_list -> class_start : ".".
 chr_list -> class_start chr_list : "." ++ '$2'.
 chr_list -> id_start : "#".
 chr_list -> id_start chr_list : "#" ++ '$2'.
+chr_list -> lparen : "(".
+chr_list -> lparen chr_list : "(" ++ '$2'.
+chr_list -> rparen : ")".
+chr_list -> rparen chr_list : ")" ++ '$2'.
+
 
 name -> name_list : {name, '$1'}.
 
@@ -38,8 +43,9 @@ id_attr -> id_start number : unwrap_label_attr(id, '$2').
 class_attr -> class_start name : unwrap_label_attr(class, '$2').
 
 attr_list -> lbrace rbrace : [].
-attr_list -> lbrace fun_call rbrace : ['$2'].
 attr_list -> lbrace attrs rbrace : '$2'.
+attr_list -> lbrace fun_call rbrace : ['$2'].
+attr_list -> lbrace fun_call comma attrs rbrace : ['$2'|'$4'].
 
 attrs -> attr : ['$1'].
 attrs -> attr comma attrs : ['$1'] ++ '$3'.

@@ -70,7 +70,10 @@ attr_list_test_() ->
                                   {color, "red"}]}}, lex_and_parse("%td#foo123[{width, @Width}, {color, 'red'}]/")),
    ?_assertMatch({ok, {tag_decl, [{tag_name, "td"},
                                   {id, "foo123"},
-                                  {fun_call, user, default_attr}]}}, lex_and_parse("%td#foo123[@user:default_attr]"))].
+                                  {fun_call, user, default_attr}]}}, lex_and_parse("%td#foo123[@user:default_attr]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "td"}, 
+                                  {fun_call, user, default_attr}, 
+                                  {onclick, "alert()"}]}}, lex_and_parse("%td[@user:default_attr, {onclick, 'alert()'}]"))].
 
 
 

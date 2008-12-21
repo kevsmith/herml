@@ -23,7 +23,8 @@ Rules.
 \:			:	{token, {colon, TokenLine, TokenChars}}.
 \/			:	{token, {slash, TokenLine, TokenChars}}.
 {BANG}{BANG}{BANG}      :       {token, {doctype_start, TokenLine, TokenChars}}.
-
+\(                      :       {token, {lparen, TokenLine, TokenChars}}.
+\)                      :       {token, {rparen, TokenLine, TokenChars}}.
 
 Erlang code.
 %% Not used
