@@ -17,7 +17,9 @@ render_test_() ->
    check("tests/examples/default_attr"),
    check("tests/examples/horizontal_rule"),
    check("tests/examples/close_empty"),
-   check("tests/examples/doctypes")].
+   check("tests/examples/doctypes"),
+   check("tests/examples/multiple_classes"),
+   check("tests/examples/sort_attributes")].
 
 check(FileName) ->
   check(FileName, []).

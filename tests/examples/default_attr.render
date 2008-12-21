@@ -1,9 +1,9 @@
 <html>
   <body>
-    <div color="red" class="foo" id="foo">
+    <div class="foo" color="red" id="foo">
       Testing 123
     </div>
-    <div color="red" class="foo" id="bar" width="50%">
+    <div class="foo" color="red" id="bar" width="50%">
       Testing 456
     </div>
   </body>

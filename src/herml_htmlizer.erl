@@ -76,7 +76,8 @@ render_inline_end_tag(Attrs) ->
 
 render_attrs(Attrs, Env) ->
   lists:foldl(fun(Attr, Accum) ->
-                  render_attr(Attr, Env, Accum) end, "", Attrs).
+                render_attr(Attr, Env, Accum) end, "", 
+              lists:sort(consolidate_classes(Attrs))).
 
 create_whitespace(Depth) ->
   create_whitespace(Depth, []).
@@ -117,4 +118,13 @@ detect_terminator(Attrs) ->
       " />";
     false ->
       ">"
+  end.
+
+consolidate_classes(Attrs) ->
+  case proplists:is_defined(class, Attrs) of
+    true ->
+      Classes = proplists:get_all_values(class, Attrs),
+      NewValue = string:join(Classes, " "),
+      [{class, NewValue}|proplists:delete(class, Attrs)];
+    _ -> Attrs
   end.
