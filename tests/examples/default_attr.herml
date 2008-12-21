@@ -2,3 +2,5 @@
   %body
     #foo[@test_herml_htmlizer:default_attr]
       Testing 123
+    #bar[@test_herml_htmlizer:default_attr, {width, '50%'}]
+      Testing 456

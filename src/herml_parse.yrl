@@ -31,7 +31,6 @@ chr_list -> lparen chr_list : "(" ++ '$2'.
 chr_list -> rparen : ")".
 chr_list -> rparen chr_list : ")" ++ '$2'.
 
-
 name -> name_list : {name, '$1'}.
 
 name_list -> chr : unwrap_char('$1').

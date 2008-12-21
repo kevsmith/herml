@@ -3,5 +3,8 @@
     <div color="red" class="foo" id="foo">
       Testing 123
     </div>
+    <div color="red" class="foo" id="bar" width="50%">
+      Testing 456
+    </div>
   </body>
 </html>
