@@ -1,0 +1,4 @@
+%html
+  %body
+    #foo[{style, 'margin: 0 5px'}]
+      This is a test

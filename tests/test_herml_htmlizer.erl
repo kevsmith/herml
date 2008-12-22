@@ -19,7 +19,8 @@ render_test_() ->
    check("tests/examples/close_empty"),
    check("tests/examples/doctypes"),
    check("tests/examples/multiple_classes"),
-   check("tests/examples/sort_attributes")].
+   check("tests/examples/sort_attributes"),
+   check("tests/examples/style_attribute")].
 
 check(FileName) ->
   check(FileName, []).

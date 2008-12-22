@@ -1,0 +1,7 @@
+<html>
+  <body>
+    <div id="foo" style="margin: 0 5px">
+      This is a test
+    </div>
+  </body>
+</html>
