@@ -4,6 +4,12 @@
 
 -define(RESERVED_TAG_ATTRS, [tag_name, singleton]).
 
+-define(DOCTYPE_TRANSITIONAL, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n").
+-define(DOCTYPE_STRICT, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n").
+-define(DOCTYPE_HTML11, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n").
+-define(DOCTYPE_XML, "<?xml version='1.0' encoding='utf-8' ?>\n").
+-define(DOCTYPE_FRAMESET, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n").
+
 render(Template) ->
   render(Template, []).
 
@@ -33,19 +39,19 @@ render([{_, {var_ref, VarName}, Children}|T], Env, Accum) ->
   render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env) |Accum]);
 
 render([{_, {doctype, "Transitional"}, []}|T], Env, Accum) ->
-  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"|Accum]);
+  render(T, Env, [?DOCTYPE_TRANSITIONAL|Accum]);
 
 render([{_, {doctype, "Strict"}, []}|T], Env, Accum) ->
-  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"|Accum]);
+  render(T, Env, [?DOCTYPE_STRICT|Accum]);
 
 render([{_, {doctype, "1.1"}, []}|T], Env, Accum) ->
-  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"|Accum]);
+  render(T, Env, [?DOCTYPE_HTML11|Accum]);
 
 render([{_, {doctype, "XML"}, []}|T], Env, Accum) ->
-  render(T, Env, ["<?xml version='1.0' encoding='utf-8' ?>\n"|Accum]);
+  render(T, Env, [?DOCTYPE_XML|Accum]);
 
 render([{_, {doctype, "Frameset"}, []}|T], Env, Accum) ->
-  render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n"|Accum]);
+  render(T, Env, [?DOCTYPE_FRAMESET|Accum]);
 
 render([{_, Text, []}|T], Env, Accum) ->
   render(T, Env, [render_text(Text) ++ "\n"|Accum]);
@@ -79,7 +85,7 @@ render_inline_end_tag(Attrs) ->
 
 render_attrs(Attrs, Env) ->
   lists:foldl(fun(Attr, Accum) ->
-                render_attr(Attr, Env, Accum) end, "", 
+                render_attr(Attr, Env, Accum) end, "",
               lists:sort(consolidate_classes(Attrs))).
 
 create_whitespace(Depth) ->

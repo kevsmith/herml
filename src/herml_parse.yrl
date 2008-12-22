@@ -1,25 +1,34 @@
 Nonterminals
 tag_decl tag_stem id_attr class_attr attr_list attrs attr string
 chr_list name name_list var_ref fun_call shortcuts
-class_list.
+class_list iter_generator iter_generator_list iter
+template_stmt.
 
 Terminals
 tag_start class_start id_start number
 lcurly rcurly lbrace rbrace lparen rparen
-at comma quote chr colon slash doctype_start.
+at comma quote chr colon slash doctype_start
+text dash lt pipe.
 
-Rootsymbol tag_decl.
+Rootsymbol template_stmt.
 
-var_ref -> at name : {var_ref, unwrap_name('$2')}.
+iter_generator -> name lt dash var_ref : {iter_generator, '$4', '$1'}.
+
+iter_generator_list -> iter_generator : ['$1'].
+iter_generator_list -> iter_generator comma iter_generator_list : ['$1'|'$3'].
+
+iter -> lbrace text pipe pipe iter_generator_list rbrace : {loop, {template, unwrap('$2')}, {generators, '$5'}}.
+
+var_ref -> at name : {var_ref, unwrap('$2')}.
 fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4')}.
 
 string -> quote chr_list quote : {string, '$2'}.
 string -> quote quote : {string, ""}.
 
-chr_list -> chr : unwrap_char('$1').
+chr_list -> chr : unwrap('$1').
 chr_list -> number :  number_to_list('$1').
 chr_list -> tag_start : "%".
-chr_list -> chr chr_list : unwrap_char('$1') ++ '$2'.
+chr_list -> chr chr_list : unwrap('$1') ++ '$2'.
 chr_list -> number chr_list : number_to_list('$1') ++ '$2'.
 chr_list -> tag_start chr_list : "%" ++ '$2'.
 chr_list -> class_start : ".".
@@ -35,8 +44,8 @@ chr_list -> colon chr_list : ":" ++ '$2'.
 
 name -> name_list : {name, '$1'}.
 
-name_list -> chr : unwrap_char('$1').
-name_list -> chr name_list : unwrap_char('$1') ++ '$2'.
+name_list -> chr : unwrap('$1').
+name_list -> chr name_list : unwrap('$1') ++ '$2'.
 
 id_attr -> id_start name : unwrap_label_attr(id, '$2').
 id_attr -> id_start number : unwrap_label_attr(id, '$2').
@@ -51,8 +60,11 @@ attr_list -> lbrace fun_call comma attrs rbrace : ['$2'|'$4'].
 attrs -> attr : ['$1'].
 attrs -> attr comma attrs : ['$1'] ++ '$3'.
 
-attr -> lcurly name comma string rcurly : {name_to_atom('$2'), unwrap_string('$4')}.
+attr -> lcurly name comma string rcurly : {name_to_atom('$2'), unwrap('$4')}.
 attr -> lcurly name comma var_ref rcurly : {name_to_atom('$2'), '$4'}.
+
+template_stmt -> tag_decl : '$1'.
+template_stmt -> iter : '$1'.
 
 %% raw variable ref
 tag_decl -> var_ref : '$1'.
@@ -86,13 +98,13 @@ Erlang code.
 unwrap_label_attr(Label, {_, Value}) ->
   {Label, Value}.
 
-unwrap_char({chr, _, Value}) ->
-  Value.
-
-unwrap_string({string, Value}) ->
-  Value.
-
-unwrap_name({name, Value}) ->
+unwrap({text, _, Value}) ->
+  Value;
+unwrap({chr, _, Value}) ->
+  Value;
+unwrap({string, Value}) ->
+  Value;
+unwrap({name, Value}) ->
   Value.
 
 number_to_list({number, _, Value}) ->
