@@ -1,13 +1,9 @@
 Definitions.
 
-WS  = [\s|\t|\n|\r]
 D = [0-9]
-STRCHAR = [a-z|A-Z|0-9|_|]
-BANG = [!]
-
+STRCHAR = [a-z|A-Z|0-9|_]
 Rules.
 
-{WS}+                   :       skip_token.
 \-			:	{token, {dash, TokenLine, TokenChars}}.
 \%                      :       {token, {tag_start, TokenLine, TokenChars}}.
 \.                      :       {token, {class_start, TokenLine, TokenChars}}.
@@ -23,12 +19,13 @@ Rules.
 '			: 	{token, {quote, TokenLine, TokenChars}}.
 \:			:	{token, {colon, TokenLine, TokenChars}}.
 \/			:	{token, {slash, TokenLine, TokenChars}}.
-{BANG}{BANG}{BANG}      :       {token, {doctype_start, TokenLine, TokenChars}}.
+!			:       {token, {bang, TokenLine, TokenChars}}.
 \(                      :       {token, {lparen, TokenLine, TokenChars}}.
 \)                      :       {token, {rparen, TokenLine, TokenChars}}.
 |			:	{token, {pipe, TokenLine, TokenChars}}.
 <			:	{token, {lt, TokenLine, TokenChars}}.
 >			:	{token, {gt, TokenLine, TokenChars}}.
+\s			:	{token, {space, TokenLine, TokenChars}}.
 
 Erlang code.
 %% Not used

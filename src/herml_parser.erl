@@ -25,7 +25,7 @@ parse(Contents) ->
   parse(Contents, []).
 
 parse([{Depth, Text, []}|T], Accum) ->
-  case herml_scan:string(Text) of
+  case herml_scan:string(string:strip(Text)) of
     {error, _, _} ->
       parse(T, [{Depth, Text, []}|Accum]);
     {ok, Tokens, _} ->
@@ -37,8 +37,9 @@ parse([{Depth, Text, []}|T], Accum) ->
       end
   end;
 parse([{Depth, Text, Children}|T], Accum) ->
-  case herml_scan:string(Text) of
-    {error, _, _} ->
+  case herml_scan:string(string:strip(Text)) of
+    {error, _, _}=E ->
+      io:format("E: ~p~n", [E]),
       throw({invalid_nesting, Text});
     {ok, Tokens, _} ->
       case herml_parse:parse(Tokens) of

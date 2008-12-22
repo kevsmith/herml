@@ -7,8 +7,8 @@ template_stmt.
 Terminals
 tag_start class_start id_start number
 lcurly rcurly lbrace rbrace lparen rparen
-at comma quote chr colon slash doctype_start
-text dash lt pipe.
+at comma quote chr colon slash
+text dash lt pipe space bang.
 
 Rootsymbol template_stmt.
 
@@ -41,6 +41,8 @@ chr_list -> rparen : ")".
 chr_list -> rparen chr_list : ")" ++ '$2'.
 chr_list -> colon : ":".
 chr_list -> colon chr_list : ":" ++ '$2'.
+chr_list -> space : unwrap('$1').
+chr_list -> space chr_list : unwrap('$1') ++ '$2'.
 
 name -> name_list : {name, '$1'}.
 
@@ -56,12 +58,18 @@ attr_list -> lbrace rbrace : [].
 attr_list -> lbrace attrs rbrace : '$2'.
 attr_list -> lbrace fun_call rbrace : ['$2'].
 attr_list -> lbrace fun_call comma attrs rbrace : ['$2'|'$4'].
+attr_list -> lbrace fun_call comma space attrs rbrace : ['$2'|'$5'].
 
 attrs -> attr : ['$1'].
 attrs -> attr comma attrs : ['$1'] ++ '$3'.
+attrs -> attr comma space attrs : ['$1'] ++ '$4'.
 
 attr -> lcurly name comma string rcurly : {name_to_atom('$2'), unwrap('$4')}.
 attr -> lcurly name comma var_ref rcurly : {name_to_atom('$2'), '$4'}.
+
+attr -> lcurly name comma space string rcurly : {name_to_atom('$2'), unwrap('$5')}.
+attr -> lcurly name comma space var_ref rcurly : {name_to_atom('$2'), '$5'}.
+
 
 template_stmt -> tag_decl : '$1'.
 template_stmt -> iter : '$1'.
@@ -70,8 +78,9 @@ template_stmt -> iter : '$1'.
 tag_decl -> var_ref : '$1'.
 
 %% doctype selector
-tag_decl -> doctype_start : {doctype, "Transitional"}.
-tag_decl -> doctype_start chr_list : {doctype, '$2'}.
+tag_decl -> bang bang bang : {doctype, "Transitional"}.
+tag_decl -> bang bang bang space : {doctype, "Transitional"}.
+tag_decl -> bang bang bang space chr_list : {doctype, '$5'}.
 
 %% singletons or containers
 tag_decl -> tag_stem : {tag_decl, '$1'}.
@@ -103,6 +112,8 @@ unwrap({text, _, Value}) ->
 unwrap({chr, _, Value}) ->
   Value;
 unwrap({string, Value}) ->
+  Value;
+unwrap({space, _, Value}) ->
   Value;
 unwrap({name, Value}) ->
   Value.

@@ -1,1 +1,1 @@
-<div class="test" onclick="alert(this)" style="width:100%"></div>
+<div class="test" onclick="alert(this)" style="width: 100%"></div>
