@@ -48,13 +48,16 @@ render([{_, {doctype, "Frameset"}, []}|T], Env, Accum) ->
   render(T, Env, ["<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n"|Accum]);
 
 render([{_, Text, []}|T], Env, Accum) ->
-  render(T, Env, [Text ++ "\n"|Accum]);
+  render(T, Env, [render_text(Text) ++ "\n"|Accum]);
 
 render([{_, Text, Children}|T], Env, Accum) ->
-  render(T, Env, [Text ++ render(Children, Env)|Accum]);
+  render(T, Env, [render_text(Text) ++ render(Children, Env)|Accum]);
 
 render([], _Env, Accum) ->
   lists:reverse(Accum).
+
+render_text({text, _, Text}) ->
+  Text.
 
 render_tag(Depth, Attrs, Terminator, Env) ->
   create_whitespace(Depth) ++ "<" ++

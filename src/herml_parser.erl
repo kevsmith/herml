@@ -33,7 +33,7 @@ parse([{Depth, Text, []}|T], Accum) ->
         {ok, Stmt} ->
           parse(T, [{Depth, Stmt, []}|Accum]);
         {error, _} ->
-          parse(T, [{Depth, Text, []}|Accum])
+          parse(T, [{Depth, {text, 0, Text}, []}|Accum])
       end
   end;
 parse([{Depth, Text, Children}|T], Accum) ->

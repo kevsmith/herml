@@ -20,4 +20,10 @@ tokenizing_test_() ->
    ?_assertMatch({ok, [{comma, _, _}], _}, herml_scan:string(",")),
    ?_assertMatch({ok, [{number, _, 123}], _}, herml_scan:string("123")),
    ?_assertMatch({ok, [{colon, _, ":"}], _}, herml_scan:string(":")),
-   ?_assertMatch({ok, [{slash, _, "/"}], _}, herml_scan:string("/"))].
+   ?_assertMatch({ok, [{slash, _, "/"}], _}, herml_scan:string("/")),
+   ?_assertMatch({ok, [{dash, _, "-"}], _}, herml_scan:string("-")),
+   ?_assertMatch({ok, [{chr, _, "abc"},
+                       {dash, _, "-"},
+                       {chr, _, "def"}], _}, herml_scan:string("abc-def")),
+   ?_assertMatch({ok, [{lt, _, "<"}], _}, herml_scan:string("<")),
+   ?_assertMatch({ok, [{gt, _, ">"}], _}, herml_scan:string(">"))].
