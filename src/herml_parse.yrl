@@ -30,6 +30,8 @@ chr_list -> lparen : "(".
 chr_list -> lparen chr_list : "(" ++ '$2'.
 chr_list -> rparen : ")".
 chr_list -> rparen chr_list : ")" ++ '$2'.
+chr_list -> colon : ":".
+chr_list -> colon chr_list : ":" ++ '$2'.
 
 name -> name_list : {name, '$1'}.
 
