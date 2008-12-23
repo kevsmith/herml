@@ -1,0 +1,6 @@
+%html
+  %body
+    %table
+      [%tr
+        %td
+          @User || User <- @Users]
