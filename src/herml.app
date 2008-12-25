@@ -7,8 +7,7 @@
              herml_parse,
              herml_parser,
              herml_reader,
-             herml_scan,
-             herml_tags]},
+             herml_scan]},
    {registered, []},
    {env, []},
    {applications, [kernel, stdlib]}]}.
