@@ -2,7 +2,7 @@ Nonterminals
 tag_decl tag_stem id_attr class_attr attr_list attrs attr string
 chr_list name name_list var_ref fun_call shortcuts
 class_list iter_generator iter_generator_list iter
-template_stmt.
+template_stmt doctype_name.
 
 Terminals
 tag_start class_start id_start number
@@ -74,13 +74,23 @@ attr -> lcurly name comma space var_ref rcurly : {name_to_atom('$2'), '$5'}.
 template_stmt -> tag_decl : '$1'.
 template_stmt -> iter : '$1'.
 
+doctype_name -> chr : unwrap('$1').
+doctype_name -> chr doctype_name : unwrap('$1') ++ '$2'.
+doctype_name -> dash : "-".
+doctype_name -> dash doctype_name : "-" ++ '$2'.
+doctype_name -> class_start : ".".
+doctype_name -> class_start doctype_name : "." ++ '$2'.
+doctype_name -> number : number_to_list('$1').
+doctype_name -> number doctype_name : number_to_list('$1') ++ '$2'.
+
 %% raw variable ref
 tag_decl -> var_ref : '$1'.
 
 %% doctype selector
-tag_decl -> bang bang bang : {doctype, "Transitional"}.
-tag_decl -> bang bang bang space : {doctype, "Transitional"}.
-tag_decl -> bang bang bang space chr_list : {doctype, '$5'}.
+tag_decl -> bang bang bang : {doctype, "Transitional", []}.
+tag_decl -> bang bang bang space : {doctype, "Transitional", []}.
+tag_decl -> bang bang bang space doctype_name : {doctype, '$5', []}.
+tag_decl -> bang bang bang space doctype_name space doctype_name : {doctype, '$5', '$7'}.
 
 %% singletons or containers
 tag_decl -> tag_stem : {tag_decl, '$1'}.

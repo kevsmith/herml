@@ -106,9 +106,10 @@ default_div_attr_list_test_() ->
                                   {width, "200"}]}}, lex_and_parse(".row#foo123[{width, '200'}]"))].
 
 doctype_test_()->
-  [?_assertMatch({ok, {doctype, "Transitional"}}, lex_and_parse("!!!")),
-   ?_assertMatch({ok, {doctype, "Strict"}}, lex_and_parse("!!! Strict")),
-   ?_assertMatch({ok, {doctype, "1.1"}}, lex_and_parse("!!! 1.1"))].
+  [?_assertMatch({ok, {doctype, "Transitional", []}}, lex_and_parse("!!!")),
+   ?_assertMatch({ok, {doctype, "Strict", []}}, lex_and_parse("!!! Strict")),
+   ?_assertMatch({ok, {doctype, "1.1", []}}, lex_and_parse("!!! 1.1")),
+   ?_assertMatch({ok, {doctype, "1.1", "iso8859-1"}}, lex_and_parse("!!! 1.1 iso8859-1"))].
 
 lex_and_parse(Text) ->
   {ok, T, _} = herml_scan:string(Text),

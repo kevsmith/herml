@@ -7,7 +7,9 @@
 -define(DOCTYPE_TRANSITIONAL, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n").
 -define(DOCTYPE_STRICT, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n").
 -define(DOCTYPE_HTML11, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n").
--define(DOCTYPE_XML, "<?xml version='1.0' encoding='utf-8' ?>\n").
+-define(DOCTYPE_XML_START, "<?xml version='1.0' encoding='").
+-define(DOCTYPE_XML_END, "' ?>\n").
+-define(DOCTYPE_XML, ?DOCTYPE_XML_START ++ "utf-8" ++ ?DOCTYPE_XML_END).
 -define(DOCTYPE_FRAMESET, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n").
 
 render(Template) ->
@@ -38,19 +40,22 @@ render([{Depth, {var_ref, VarName}, []}|T], Env, Accum) ->
 render([{_, {var_ref, VarName}, Children}|T], Env, Accum) ->
   render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env) |Accum]);
 
-render([{_, {doctype, "Transitional"}, []}|T], Env, Accum) ->
+render([{_, {doctype, "Transitional", _}, []}|T], Env, Accum) ->
   render(T, Env, [?DOCTYPE_TRANSITIONAL|Accum]);
 
-render([{_, {doctype, "Strict"}, []}|T], Env, Accum) ->
+render([{_, {doctype, "Strict", _}, []}|T], Env, Accum) ->
   render(T, Env, [?DOCTYPE_STRICT|Accum]);
 
-render([{_, {doctype, "1.1"}, []}|T], Env, Accum) ->
+render([{_, {doctype, "1.1", _}, []}|T], Env, Accum) ->
   render(T, Env, [?DOCTYPE_HTML11|Accum]);
 
-render([{_, {doctype, "XML"}, []}|T], Env, Accum) ->
+render([{_, {doctype, "XML", Encoding}, []}|T], Env, Accum) when is_list(Encoding) andalso Encoding /= [] ->
+  render(T, Env, lists:reverse(?DOCTYPE_XML_START ++ Encoding ++ ?DOCTYPE_XML_END) ++ Accum);
+  
+render([{_, {doctype, "XML", []}, []}|T], Env, Accum) ->
   render(T, Env, [?DOCTYPE_XML|Accum]);
 
-render([{_, {doctype, "Frameset"}, []}|T], Env, Accum) ->
+render([{_, {doctype, "Frameset", _}, []}|T], Env, Accum) ->
   render(T, Env, [?DOCTYPE_FRAMESET|Accum]);
 
 render([{_, Text, []}|T], Env, Accum) ->
