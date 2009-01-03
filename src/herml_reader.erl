@@ -41,12 +41,14 @@ clean([{node, Depth, Text, Children}|T], Accum) ->
           clean(Children, [])
       end,
   clean(T, [{Depth, Text, C}|Accum]);
+clean([{loop, _, _, _}=H|T], Accum) ->
+  clean(T, [H|Accum]);
 clean([], Accum) ->
   lists:reverse(Accum).
 
 rollup(Tree, -1) ->
   lists:reverse(Tree);
-rollup(Tree, Depth) ->
+rollup(Tree, Depth) when is_number(Depth) ->
   rollup(parent(Tree, Depth, Depth - 1), Depth - 1).
 
 parent(Tree, ChildDepth, ParentDepth) ->
@@ -54,10 +56,10 @@ parent(Tree, ChildDepth, ParentDepth) ->
 
 parent([H|T], ChildDepth, ParentDepth, Children, Accum) ->
   case H of
-    {node, ChildDepth, _, _} ->
+    {_, ChildDepth, _, _} ->
       parent(T, ChildDepth, ParentDepth, [H|Children], Accum);
-    {node, ParentDepth, Text, _} ->
-      parent(T, ChildDepth, ParentDepth, [], [{node, ParentDepth, Text, Children}|Accum]);
+    {NodeType, ParentDepth, Text, _} ->
+      parent(T, ChildDepth, ParentDepth, [], [{NodeType, ParentDepth, Text, Children}|Accum]);
     _ ->
       parent(T, ChildDepth, ParentDepth, Children, [H|Accum])
   end;
@@ -68,7 +70,7 @@ parent([], _, _, Children, []) ->
 parent([], _, _, _, Accum) ->
   lists:reverse(Accum).
 
-find_max_depth([{node, Level, _, _}|T], Max) ->
+find_max_depth([{_, Level, _, _}|T], Max) ->
   case Level > Max of
     true ->
       find_max_depth(T, Level);
@@ -82,11 +84,18 @@ parse(Lines) ->
   parse(Lines, []).
 
 parse([H|T], Accum) ->
-  case length(string:strip(H)) of
+  L = string:strip(H),
+  case length(L) of
     0 ->
       parse(T, Accum);
     _ ->
-      parse(T, [classify(H)|Accum])
+      case loop_start(L) of
+        true ->
+          {Remainder, Loop} = parse_loop(H, T),
+          parse(Remainder, [Loop|Accum]);
+        false ->
+          parse(T, [classify(H)|Accum])
+      end
   end;
 parse([], Accum) ->
   lists:reverse(Accum).
@@ -100,7 +109,28 @@ classify(Line) ->
       throw({error, bad_indent, Line})
   end.
 
+loop_start(Line) ->
+  string:str(string:strip(Line), "[") == 1.
+
+loop_end(Line) ->
+  L = string:strip(Line),
+  string:str(L, "]") == length(L).
+
 count_indent([$\s|T], Count) ->
   count_indent(T, Count + 1);
 count_indent([_|_], Count) ->
   Count.
+
+parse_loop(H, T) ->
+  Indent = count_indent(H, 0),
+  read_loop(Indent, T, [H ++ "\n"]).
+
+read_loop(Indent, [H|T], Accum) ->
+  case loop_end(H) of
+    false ->
+      read_loop(Indent, T, [H ++ "\n"|Accum]);
+    true ->
+      {T, {loop, Indent, lists:flatten(lists:reverse([H|Accum])), []}}
+  end;
+read_loop(_, [], _) ->
+  throw({error, bad_loop_decl}).

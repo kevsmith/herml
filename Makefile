@@ -8,7 +8,7 @@ clean_gen:
 	rm -f src/herml_scan.erl
 	rm -f src/herml_parse.erl
 
-tests: src_src src_tests
+tests: clean src_src src_tests
 	${ERL} -pa ebin -pa ebin_tests -noshell -s init stop -eval 'test_suite:test().'
 
 ebin:
