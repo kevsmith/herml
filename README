@@ -8,6 +8,19 @@ Building:
                                 -or-
   3b) Use the -pz or -pa switches on erl to place herml/ebin onto your code path
 
+Using in Sinan:
+1) Clone the herml repo from Github
+2) Run `make special` in the herml directory
+3) Make sure your sinan project can find the herml repo
+   3a) Clone inside your projects lib directory
+                  -or-
+   3b) Symlink the herml directory to your projects lib directory
+
+4) Keep it up to date:
+  a) Pull down latest changes
+  b) `make clean`
+  c) `make special`
+
 Running tests:
 1) Run make clean tests
 
