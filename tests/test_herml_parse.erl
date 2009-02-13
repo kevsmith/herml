@@ -111,6 +111,9 @@ doctype_test_()->
    ?_assertMatch({ok, {doctype, "1.1", []}}, lex_and_parse("!!! 1.1")),
    ?_assertMatch({ok, {doctype, "1.1", "iso8859-1"}}, lex_and_parse("!!! 1.1 iso8859-1"))].
 
+iter_test_()->
+  [?_assertMatch({ok,{iter,{var_ref,"Item"},{var_ref,"List"}}}, lex_and_parse("- [@Item] <- @List"))].
+
 lex_and_parse(Text) ->
   {ok, T, _} = herml_scan:string(Text),
   herml_parse:parse(T).

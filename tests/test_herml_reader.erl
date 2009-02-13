@@ -27,10 +27,5 @@ nesting_test_() ->
                    [{1, "  Third group four.",[]}]}],
                  herml_reader:file("tests/examples/simple_nesting.herml"))].
 
-loop_test_() ->
-  [?_assertMatch([{loop, 0, "[#foo\n  @User || User <- @Users]", []}], herml_reader:string("[#foo\n  @User || User <- @Users]")),
-   ?_assertMatch([{loop, 0, "[#foo\n  .user\n  @User || User <- @Users]", []}], herml_reader:string("[#foo\n  .user\n  @User || User <- @Users]")),
-   ?_assertThrow({error, bad_loop_decl}, herml_reader:string("[#foo\n  @User || User <- @Users"))].
-
 error_test_() ->
   [?_assertThrow({error, bad_indent, _}, herml_reader:file("tests/examples/bad_indent.herml"))].

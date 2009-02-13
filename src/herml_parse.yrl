@@ -1,7 +1,7 @@
 Nonterminals
 tag_decl tag_stem id_attr class_attr attr_list attrs attr string
 chr_list name name_list var_ref fun_call shortcuts
-class_list iter_generator iter_generator_list iter
+class_list iter_item iter
 template_stmt doctype_name.
 
 Terminals
@@ -12,12 +12,12 @@ text dash lt pipe space bang.
 
 Rootsymbol template_stmt.
 
-iter_generator -> name lt dash var_ref : {iter_generator, '$4', '$1'}.
+template_stmt -> tag_decl : '$1'.
+template_stmt -> iter : '$1'.
 
-iter_generator_list -> iter_generator : ['$1'].
-iter_generator_list -> iter_generator comma iter_generator_list : ['$1'|'$3'].
+iter -> dash space lbrace iter_item rbrace space lt dash space var_ref : {iter, '$4', '$10'}.
 
-iter -> lbrace text pipe pipe iter_generator_list rbrace : {loop, {template, unwrap('$2')}, {generators, '$5'}}.
+iter_item -> var_ref : '$1'.
 
 var_ref -> at name : {var_ref, unwrap('$2')}.
 fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4')}.
@@ -69,10 +69,6 @@ attr -> lcurly name comma var_ref rcurly : {name_to_atom('$2'), '$4'}.
 
 attr -> lcurly name comma space string rcurly : {name_to_atom('$2'), unwrap('$5')}.
 attr -> lcurly name comma space var_ref rcurly : {name_to_atom('$2'), '$5'}.
-
-
-template_stmt -> tag_decl : '$1'.
-template_stmt -> iter : '$1'.
 
 doctype_name -> chr : unwrap('$1').
 doctype_name -> chr doctype_name : unwrap('$1') ++ '$2'.

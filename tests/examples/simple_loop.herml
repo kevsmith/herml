@@ -1,6 +1,7 @@
 %html
   %body
     %table
-      [%tr
-        %td
-          @User || User <- @Users]
+      - [@User] <- @Users
+        %tr
+          %td
+            @User
