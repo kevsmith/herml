@@ -1,0 +1,2 @@
+- [{_, @User}] <- @Users
+  @User
