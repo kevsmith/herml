@@ -4,6 +4,7 @@ D = [0-9]
 STRCHAR = [a-z|A-Z|0-9|_]
 Rules.
 
+_           :  {token, {underscore, TokenLine, TokenChars}}.
 \-          :  {token, {dash, TokenLine, TokenChars}}.
 \%          :  {token, {tag_start, TokenLine, TokenChars}}.
 \.          :  {token, {class_start, TokenLine, TokenChars}}.

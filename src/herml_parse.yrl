@@ -1,14 +1,14 @@
 Nonterminals
 tag_decl tag_stem id_attr class_attr attr_list attrs attr string
 chr_list name name_list var_ref fun_call shortcuts
-class_list iter_item iter
+class_list iter_item iter iter_list
 template_stmt doctype_name.
 
 Terminals
 tag_start class_start id_start number
 lcurly rcurly lbrace rbrace lparen rparen
 at comma quote chr colon slash
-text dash lt pipe space bang.
+dash lt space bang underscore.
 
 Rootsymbol template_stmt.
 
@@ -17,7 +17,14 @@ template_stmt -> iter : '$1'.
 
 iter -> dash space lbrace iter_item rbrace space lt dash space var_ref : {iter, '$4', '$10'}.
 
+iter_item -> underscore : ignore.
 iter_item -> var_ref : '$1'.
+iter_item -> lcurly iter_list rcurly: {tuple, '$2'}.
+iter_item -> lbrace iter_list rbrace: {list, '$2'}.
+
+iter_list -> iter_item : ['$1'].
+iter_list -> iter_item comma space iter_list : ['$1'|'$4'].
+iter_list -> iter_item comma iter_list : ['$1'|'$3'].
 
 var_ref -> at name : {var_ref, unwrap('$2')}.
 fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4')}.
