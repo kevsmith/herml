@@ -20,7 +20,7 @@ render(Template, Env) ->
 
 %% Internal functions
 render([{_, {iter, Match, {var_ref, List}}, Subtemplate}|T], Env, Accum) ->
-  Result = lists:map(fun(Item) -> render(Subtemplate, iteration_env(Match, Item, Env), []) end, lookup_var(List, Env)),
+  Result = lists:map(fun(Item) -> unindent(render(Subtemplate, iteration_env(Match, Item, Env), [])) end, lookup_var(List, Env)),
   render(T, Env, [Result|Accum]);
 
 render([{Depth, {tag_decl, Attrs}, []}|T], Env, Accum) ->
@@ -149,3 +149,12 @@ consolidate_classes(Attrs) ->
 iteration_env({var_ref, Name}, Item, Env) ->
   [{Name, Item}|Env];
 iteration_env(_,_,Env) -> Env.
+
+unindent(List) ->
+  Flat = lists:flatten(List),
+  Split = string:tokens(Flat, "\n"),
+  Stripped = lists:map(fun strip_leading_indent/1, Split),
+  string:join(Stripped, "\n") ++ "\n".
+
+strip_leading_indent([32,32|T]) -> T;
+strip_leading_indent(String) -> String.
