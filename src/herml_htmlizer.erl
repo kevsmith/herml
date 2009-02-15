@@ -19,6 +19,10 @@ render(Template, Env) ->
   render(Template, Env, []).
 
 %% Internal functions
+render([{_, {iter, Match, {var_ref, List}}, Subtemplate}|T], Env, Accum) ->
+  Result = lists:map(fun(Item) -> render(Subtemplate, iteration_env(Match, Item, Env), []) end, lookup_var(List, Env)),
+  render(T, Env, [Result|Accum]);
+
 render([{Depth, {tag_decl, Attrs}, []}|T], Env, Accum) ->
   CloseTag = case detect_terminator(Attrs) of
     ">" ->
@@ -35,7 +39,6 @@ render([{Depth, {tag_decl, Attrs}, Children}|T], Env, Accum) ->
 
 render([{Depth, {var_ref, VarName}, []}|T], Env, Accum) ->
   render(T, Env, [create_whitespace(Depth) ++ lookup_var(VarName, Env) ++ "\n"|Accum]);
-
 
 render([{_, {var_ref, VarName}, Children}|T], Env, Accum) ->
   render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env) |Accum]);
@@ -142,3 +145,7 @@ consolidate_classes(Attrs) ->
       [{class, NewValue}|proplists:delete(class, Attrs)];
     _ -> Attrs
   end.
+  
+iteration_env({var_ref, Name}, Item, Env) ->
+  [{Name, Item}|Env];
+iteration_env(_,_,Env) -> Env.
