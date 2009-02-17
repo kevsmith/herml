@@ -2,7 +2,7 @@ ERL=erl
 ERLC=erlc
 ERLC_OPT=+debug_info -W -o ebin
 
-all: tools src_src
+all: src_src
 
 clean_gen:
 	rm -f src/herml_scan.erl
@@ -17,14 +17,7 @@ ebin:
 ebin_tests:
 	mkdir ebin_tests
 
-special: tools src/herml_scan.erl src/herml_parse.erl
-
-ebin_tools:
-	mkdir -p tools/ebin
-
-tools: ebin_tools
-	cd tools/src;erl -make
-	cp tools/src/leexinc.hrl tools/ebin
+special: src/herml_scan.erl src/herml_parse.erl
 
 src_src: ebin src/herml_parse.erl src/herml.app
 	cd src;erl -make
@@ -44,4 +37,3 @@ src/herml_parse.erl: src/herml_scan.erl
 clean: clean_gen
 	rm -f ebin/*
 	rm -f ebin_tests/*
-	rm -f tools/ebin/*

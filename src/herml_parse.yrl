@@ -1,14 +1,14 @@
 Nonterminals
-tag_decl tag_stem id_attr class_attr attr_list attrs attr string
-chr_list name name_list var_ref fun_call shortcuts
+tag_decl tag_stem id_attr class_attr attr_list attrs attr name 
+var_ref fun_call shortcuts
 class_list iter_item iter iter_list
 template_stmt doctype_name.
 
 Terminals
 tag_start class_start id_start number
-lcurly rcurly lbrace rbrace lparen rparen
-at comma quote chr colon slash
-dash lt space bang underscore.
+lcurly rcurly lbrace rbrace
+at comma chr colon slash
+dash lt space bang underscore string.
 
 Rootsymbol template_stmt.
 
@@ -29,32 +29,7 @@ iter_list -> iter_item comma iter_list : ['$1'|'$3'].
 var_ref -> at name : {var_ref, unwrap('$2')}.
 fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4')}.
 
-string -> quote chr_list quote : {string, '$2'}.
-string -> quote quote : {string, ""}.
-
-chr_list -> chr : unwrap('$1').
-chr_list -> number :  number_to_list('$1').
-chr_list -> tag_start : "%".
-chr_list -> chr chr_list : unwrap('$1') ++ '$2'.
-chr_list -> number chr_list : number_to_list('$1') ++ '$2'.
-chr_list -> tag_start chr_list : "%" ++ '$2'.
-chr_list -> class_start : ".".
-chr_list -> class_start chr_list : "." ++ '$2'.
-chr_list -> id_start : "#".
-chr_list -> id_start chr_list : "#" ++ '$2'.
-chr_list -> lparen : "(".
-chr_list -> lparen chr_list : "(" ++ '$2'.
-chr_list -> rparen : ")".
-chr_list -> rparen chr_list : ")" ++ '$2'.
-chr_list -> colon : ":".
-chr_list -> colon chr_list : ":" ++ '$2'.
-chr_list -> space : unwrap('$1').
-chr_list -> space chr_list : unwrap('$1') ++ '$2'.
-
-name -> name_list : {name, '$1'}.
-
-name_list -> chr : unwrap('$1').
-name_list -> chr name_list : unwrap('$1') ++ '$2'.
+name -> chr : {name, unwrap('$1')}.
 
 id_attr -> id_start name : unwrap_label_attr(id, '$2').
 id_attr -> id_start number : unwrap_label_attr(id, '$2').
@@ -124,7 +99,7 @@ unwrap({text, _, Value}) ->
   Value;
 unwrap({chr, _, Value}) ->
   Value;
-unwrap({string, Value}) ->
+unwrap({string, _, Value}) ->
   Value;
 unwrap({space, _, Value}) ->
   Value;

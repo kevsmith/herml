@@ -2,6 +2,7 @@ Definitions.
 
 D = [0-9]
 STRCHAR = [a-z|A-Z|0-9|_]
+
 Rules.
 
 _           :  {token, {underscore, TokenLine, TokenChars}}.
@@ -10,6 +11,9 @@ _           :  {token, {underscore, TokenLine, TokenChars}}.
 \.          :  {token, {class_start, TokenLine, TokenChars}}.
 #           :  {token, {id_start, TokenLine, TokenChars}}.
 {D}+        :  {token, {number, TokenLine, list_to_integer(TokenChars)}}.
+'(\\\^.|\\.|[^'])*' :
+  S = lists:sublist(TokenChars, 2, TokenLen - 2),
+  {token, {string, TokenLine, S}}.
 {STRCHAR}+  :  {token, {chr, TokenLine, TokenChars}}.
 {           :  {token, {lcurly, TokenLine, TokenChars}}.
 }           :  {token, {rcurly, TokenLine, TokenChars}}.
@@ -29,4 +33,3 @@ _           :  {token, {underscore, TokenLine, TokenChars}}.
 \s          :  {token, {space, TokenLine, TokenChars}}.
 
 Erlang code.
-%% Not used
