@@ -54,7 +54,7 @@ render([{_, {doctype, "1.1", _}, []}|T], Env, Accum) ->
 
 render([{_, {doctype, "XML", Encoding}, []}|T], Env, Accum) when is_list(Encoding) andalso Encoding /= [] ->
   render(T, Env, lists:reverse(?DOCTYPE_XML_START ++ Encoding ++ ?DOCTYPE_XML_END) ++ Accum);
-  
+
 render([{_, {doctype, "XML", []}, []}|T], Env, Accum) ->
   render(T, Env, [?DOCTYPE_XML|Accum]);
 
@@ -104,7 +104,7 @@ create_whitespace(0, Accum) ->
 create_whitespace(Depth, Accum) ->
   create_whitespace(Depth - 1, ["  "|Accum]).
 
-render_attr({fun_call, Module, Fun}, Env, Accum) ->
+render_attr({fun_call, Module, Fun, []}, Env, Accum) ->
   R1 = Module:Fun(Env),
   render_attrs(R1, Env) ++ Accum;
 

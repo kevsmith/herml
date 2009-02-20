@@ -1,12 +1,12 @@
 Nonterminals
-tag_decl tag_stem id_attr class_attr attr_list attrs attr name 
+tag_decl tag_stem id_attr class_attr attr_list attrs attr name
 var_ref fun_call shortcuts
-class_list iter_item iter iter_list
-template_stmt doctype_name.
+class_list iter_item iter iter_list template_stmt
+doctype_name param param_list.
 
 Terminals
 tag_start class_start id_start number
-lcurly rcurly lbrace rbrace
+lcurly rcurly lbrace rbrace lparen rparen
 at comma chr colon slash
 dash lt space bang underscore string.
 
@@ -27,7 +27,17 @@ iter_list -> iter_item comma space iter_list : ['$1'|'$4'].
 iter_list -> iter_item comma iter_list : ['$1'|'$3'].
 
 var_ref -> at name : {var_ref, unwrap('$2')}.
-fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4')}.
+
+param -> var_ref : '$1'.
+param -> string : '$1'.
+param -> number : '$1'.
+
+param_list -> param : ['$1'].
+param_list -> param comma param_list : ['$1'|'$3'].
+
+fun_call -> at name colon name lparen rparen : {fun_call, name_to_atom('$2'), name_to_atom('$4'), []}.
+fun_call -> at name colon name lparen param_list rparen : {fun_call, name_to_atom('$2'), name_to_atom('$4'), '$6'}.
+fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4'), []}.
 
 name -> chr : {name, unwrap('$1')}.
 
