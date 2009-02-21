@@ -41,7 +41,16 @@ render([{Depth, {var_ref, VarName}, []}|T], Env, Accum) ->
   render(T, Env, [create_whitespace(Depth) ++ lookup_var(VarName, Env) ++ "\n"|Accum]);
 
 render([{_, {var_ref, VarName}, Children}|T], Env, Accum) ->
-  render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env) |Accum]);
+  render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env) | Accum]);
+
+render([{Depth, {fun_call, Module, Fun, Args}, Children}|T], Env, Accum) ->
+  Result = create_whitespace(Depth) ++ invoke_fun(Module, Fun, Args, Env) ++ "\n",
+  render(T, Env, [Result ++ render(Children, Env) | Accum]);
+
+render([{Depth, {fun_call_env, Module, Fun, Args}, Children}|T], Env, Accum) ->
+  {R, NewEnv} = invoke_fun_env(Module, Fun, Args, Env),
+  Result = create_whitespace(Depth) ++ R ++ "\n",
+  render(T, Env, [Result ++ render(Children, NewEnv) | Accum]);
 
 render([{_, {doctype, "Transitional", _}, []}|T], Env, Accum) ->
   render(T, Env, [?DOCTYPE_TRANSITIONAL|Accum]);
@@ -104,9 +113,12 @@ create_whitespace(0, Accum) ->
 create_whitespace(Depth, Accum) ->
   create_whitespace(Depth - 1, ["  "|Accum]).
 
-render_attr({fun_call, Module, Fun, []}, Env, Accum) ->
-  R1 = Module:Fun(Env),
-  render_attrs(R1, Env) ++ Accum;
+render_attr({fun_call, Module, Fun, Args}, Env, Accum) ->
+  render_attrs(invoke_fun(Module, Fun, Args, Env), Env) ++ Accum;
+
+render_attr({fun_call_env, Module, Fun, Args}, Env, Accum) ->
+  {R, NewEnv} = invoke_fun_env(Module, Fun, Args, Env),
+  render_attrs(R, NewEnv) ++ Accum;
 
 render_attr({Name, {var_ref, VarName}}, Env, Accum) ->
   Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ lookup_var(VarName, Env) ++ "\"";
@@ -117,6 +129,25 @@ render_attr({Name, Value}, _Env, Accum) ->
     false ->
       Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ Value ++ "\""
   end.
+
+invoke_fun(Module, Fun, Args, Env) ->
+  FinalArgs = resolve_args(Args, Env),
+  Module:Fun(FinalArgs).
+
+invoke_fun_env(Module, Fun, Args, Env) ->
+  FinalArgs = resolve_args(Args, Env),
+  Module:Fun(FinalArgs ++ [Env]).
+
+resolve_args(Args, Env) ->
+  resolve_args(Args, Env, []).
+
+resolve_args([{Type, Value}|T], Env, Accum) when Type =:= string;
+                                                 Type =:= number ->
+  resolve_args(T, Env, [Value | Accum]);
+resolve_args([{var_ref, VarName}|T], Env, Accum) ->
+  resolve_args(T, Env, [lookup_var(VarName, Env)|Accum]);
+resolve_args([], _Env, Accum) ->
+  lists:reverse(Accum).
 
 lookup_var(VarName, Env) ->
   format(proplists:get_value(VarName, Env, ""), Env).

@@ -5,16 +5,33 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -export([default_attr/1]).
+-export([emit_single/1, emit_multi/2]).
+-export([emit_single_env/2, emit_multi_env/3]).
 
-default_attr(_) ->
-  [{color, "red"},
-   {class, "foo"}].
+default_attr(Env) ->
+  {[{color, "red"},
+    {class, "foo"}], Env}.
+
+emit_single(Arg) ->
+  Arg.
+
+emit_multi(Arg1, Arg2) ->
+  [Arg1, Arg2].
+
+emit_single_env(Arg, Env) ->
+  {Arg, Env}.
+
+emit_multi_env(Arg1, Arg2, Env) ->
+  {[Arg1, Arg2], Env}.
+
+
 
 render_test_() ->
   [check("tests/examples/hello_world"),
    check("tests/examples/message", [{"Message", "This is a test"}]),
    check("tests/examples/message2", [{"Message", "This is a test"}]),
    check("tests/examples/default_attr"),
+   check("tests/examples/call_single"),
    check("tests/examples/horizontal_rule"),
    check("tests/examples/close_empty"),
    check("tests/examples/doctypes"),
