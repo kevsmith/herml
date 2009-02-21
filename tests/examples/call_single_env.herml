@@ -1,0 +1,4 @@
+%html
+  %body
+    #foo
+      @@test_herml_htmlizer:emit_single('Hello, world')

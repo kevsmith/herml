@@ -1,0 +1,4 @@
+%html
+  %body
+    #foo
+      @test_herml_htmlizer:emit_multi('Hello, world ', '500')

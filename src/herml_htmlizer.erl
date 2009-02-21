@@ -132,11 +132,11 @@ render_attr({Name, Value}, _Env, Accum) ->
 
 invoke_fun(Module, Fun, Args, Env) ->
   FinalArgs = resolve_args(Args, Env),
-  Module:Fun(FinalArgs).
+  apply(Module, Fun, FinalArgs).
 
 invoke_fun_env(Module, Fun, Args, Env) ->
-  FinalArgs = resolve_args(Args, Env),
-  Module:Fun(FinalArgs ++ [Env]).
+  FinalArgs = resolve_args(Args, Env) ++ [Env],
+  apply(Module, Fun, FinalArgs).
 
 resolve_args(Args, Env) ->
   resolve_args(Args, Env, []).
