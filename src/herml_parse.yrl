@@ -14,6 +14,7 @@ Rootsymbol template_stmt.
 
 template_stmt -> tag_decl : '$1'.
 template_stmt -> iter : '$1'.
+template_stmt -> fun_call : '$1'.
 
 iter -> dash space lbrace iter_item rbrace space lt dash space var_ref : {iter, '$4', '$10'}.
 
@@ -29,15 +30,21 @@ iter_list -> iter_item comma iter_list : ['$1'|'$3'].
 var_ref -> at name : {var_ref, unwrap('$2')}.
 
 param -> var_ref : '$1'.
-param -> string : '$1'.
-param -> number : '$1'.
+param -> string : unwrap_param('$1').
+param -> number : unwrap_param('$1').
 
 param_list -> param : ['$1'].
 param_list -> param comma param_list : ['$1'|'$3'].
+param_list -> param comma space param_list : ['$1'|'$4'].
 
 fun_call -> at name colon name lparen rparen : {fun_call, name_to_atom('$2'), name_to_atom('$4'), []}.
 fun_call -> at name colon name lparen param_list rparen : {fun_call, name_to_atom('$2'), name_to_atom('$4'), '$6'}.
 fun_call -> at name colon name : {fun_call, name_to_atom('$2'), name_to_atom('$4'), []}.
+
+fun_call -> at at name colon name lparen rparen : {fun_call_env, name_to_atom('$3'), name_to_atom('$5'), []}.
+fun_call -> at at name colon name lparen param_list rparen : {fun_call_env, name_to_atom('$3'), name_to_atom('$5'), '$7'}.
+fun_call -> at at name colon name : {fun_call_env, name_to_atom('$3'), name_to_atom('$5'), []}.
+
 
 name -> chr : {name, unwrap('$1')}.
 
@@ -105,6 +112,11 @@ Erlang code.
 unwrap_label_attr(Label, {_, Value}) ->
   {Label, Value}.
 
+unwrap_param({string, _, Value}) ->
+  {string, Value};
+unwrap_param({number, _, Value}) ->
+  {number, Value}.
+
 unwrap({text, _, Value}) ->
   Value;
 unwrap({chr, _, Value}) ->
@@ -112,6 +124,8 @@ unwrap({chr, _, Value}) ->
 unwrap({string, _, Value}) ->
   Value;
 unwrap({space, _, Value}) ->
+  Value;
+unwrap({number, _, Value}) ->
   Value;
 unwrap({name, Value}) ->
   Value.

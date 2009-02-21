@@ -123,6 +123,23 @@ iter_test_()->
    ?_assertMatch({ok,{iter,{list,[ignore, {var_ref, "Item"}]},{var_ref, "List"}}}, lex_and_parse("- [[_, @Item]] <- @List"))
    ].
 
+fun_call_test_() ->
+  [?_assertMatch({ok, {fun_call, hello, world, []}}, lex_and_parse("@hello:world")),
+   ?_assertMatch({ok, {fun_call, hello, world, []}}, lex_and_parse("@hello:world()")),
+   ?_assertMatch({ok, {fun_call, hello, world, [{string, "foo"}]}}, lex_and_parse("@hello:world('foo')")),
+   ?_assertMatch({ok, {fun_call, hello, world, [{number, 1}]}}, lex_and_parse("@hello:world(1)")),
+   ?_assertMatch({ok, {fun_call, hello, world, [{string, "foo"}, {number, 1}]}}, lex_and_parse("@hello:world('foo', 1)")),
+   ?_assertMatch({ok, {fun_call, hello, world, [{var_ref, "Name"}]}}, lex_and_parse("@hello:world(@Name)"))].
+
+fun_call_env_test_() ->
+  [?_assertMatch({ok, {fun_call_env, hello, world, []}}, lex_and_parse("@@hello:world")),
+   ?_assertMatch({ok, {fun_call_env, hello, world, []}}, lex_and_parse("@@hello:world()")),
+   ?_assertMatch({ok, {fun_call_env, hello, world, [{string, "foo"}]}}, lex_and_parse("@@hello:world('foo')")),
+   ?_assertMatch({ok, {fun_call_env, hello, world, [{number, 1}]}}, lex_and_parse("@@hello:world(1)")),
+   ?_assertMatch({ok, {fun_call_env, hello, world, [{string, "foo"}, {number, 1}]}}, lex_and_parse("@@hello:world('foo', 1)")),
+   ?_assertMatch({ok, {fun_call_env, hello, world, [{var_ref, "Name"}]}}, lex_and_parse("@@hello:world(@Name)"))].
+
+
 lex_and_parse(Text) ->
   {ok, T, _} = herml_scan:string(Text),
   herml_parse:parse(T).
