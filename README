@@ -1,12 +1,13 @@
-Welcome to herml, the haml-like, templating language!
+Welcome to herml, the Haml-like templating language!
 
 Building:
-1) Clone the herml repo from Github
-2) Run make
-3) Put the herml/ebin directory somewhere on your code path:
-  3a) Symlink the top-level herml directory into your $ERLANG_HOME/lib directory
+1) Install leex 0.3 or greater. (Putting it in your $ERLANG_HOME/lib is best)
+2) Clone the herml repo from Github.
+3) Run make
+4) Put the herml/ebin directory somewhere on your code path:
+  4a) Symlink the top-level herml directory into your $ERLANG_HOME/lib directory
                                 -or-
-  3b) Use the -pz or -pa switches on erl to place herml/ebin onto your code path
+  4b) Use the -pz or -pa switches on erl to place herml/ebin onto your code path
 
 Using in Sinan:
 1) Clone the herml repo from Github
