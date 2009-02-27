@@ -9,6 +9,7 @@
 
 %% API
 -export([start_link/2, start_link/3, execute_template/2, execute_template/3]).
+-export([execute_template/4]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -36,7 +37,11 @@ execute_template(ManagerName, TemplatePath) ->
   execute_template(ManagerName, TemplatePath, []).
 
 execute_template(ManagerName, TemplatePath, Env) ->
-  gen_server:call(ManagerName, {exec_template, TemplatePath, Env}).
+  gen_server:call(ManagerName, {exec_template, TemplatePath, Env, 0}).
+
+execute_template(ManagerName, TemplatePath, Env, Offset) ->
+  gen_server:call(ManagerName, {exec_template, TemplatePath, Env, Offset}).
+
 
 init([EtsTableName, RootDir, Options]) ->
   case verify_dir(RootDir) of
@@ -50,7 +55,7 @@ init([EtsTableName, RootDir, Options]) ->
                   devmode=proplists:get_value(development, Options, false)}}
   end.
 
-handle_call({exec_template, TemplatePath, Env}, From, State) ->
+handle_call({exec_template, TemplatePath, Env, Offset}, From, State) ->
   Content = case ets:match(State#state.table_name,
                            {cache_entry, TemplatePath, '$2', '$1'}, 1) of
               '$end_of_table' ->
@@ -76,7 +81,8 @@ handle_call({exec_template, TemplatePath, Env}, From, State) ->
     {error, _} ->
       {reply, Content, State};
     _ ->
-      spawn(fun () -> exec_template(Content, Env, From) end),
+      NewEnv = prep_env(Env, State),
+      spawn(fun () -> exec_template(Content, NewEnv, Offset, From) end),
       {noreply, State}
   end;
 
@@ -96,8 +102,16 @@ code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
 
 %% Internal functions
-exec_template(Template, Env, From) ->
-  Output = herml_htmlizer:render(Template, Env),
+prep_env(Env, State) ->
+  case proplists:get_value("__herml_manager__", Env) of
+    undefined ->
+      [{"__herml_manager__", State#state.table_name}|Env];
+    _ ->
+      Env
+  end.
+
+exec_template(Template, Env, Offset, From) ->
+  Output = herml_htmlizer:render(Template, Env, Offset),
   gen_server:reply(From, {ok, Output}).
 
 load_and_store(TableName, RootDir, TemplatePath) ->

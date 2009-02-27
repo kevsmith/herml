@@ -46,6 +46,14 @@ render_test_() ->
    check("tests/examples/loop_with_ignores", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),
    check("tests/examples/structured_loop", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}])].
 
+sub_template_test_() ->
+  [fun() ->
+       {ok, Pid} = herml_manager:start_link(foo, "tests/examples"),
+       {ok, Rendered} = herml_manager:execute_template(foo, "main.herml"),
+       {ok, PreRendered} = file:read_file("tests/examples/main.render"),
+       exit(Pid, shutdown),
+       ?assertEqual(binary_to_list(PreRendered), lists:flatten(Rendered)) end].
+
 iteration_match_test_() ->
   [
     iteration_bad_match("tests/examples/structured_loop", [{"Users", [{1, "kevsmith"}, {2, "seancribbs", "foobar"}]}])
@@ -53,7 +61,7 @@ iteration_match_test_() ->
 
 iteration_bad_match(File, Env) ->
   C = herml_parser:file(File ++ ".herml"),
-  ?_assertThrow(bad_match, herml_htmlizer:render(C, Env)).
+  ?_assertThrow(bad_match, herml_htmlizer:render(C, Env, 0)).
 
 check(FileName) ->
   check(FileName, []).
@@ -69,4 +77,4 @@ read_file(File) ->
 
 render_file(File, Env) ->
   C = herml_parser:file(File ++ ".herml"),
-  lists:flatten(herml_htmlizer:render(C, Env)).
+  lists:flatten(herml_htmlizer:render(C, Env, 0)).

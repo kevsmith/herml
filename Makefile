@@ -9,7 +9,7 @@ clean_gen:
 	rm -f src/herml_parse.erl
 
 tests: clean src_src src_tests
-	${ERL} -pa ebin -pa ebin_tests -noshell -s init stop -eval 'test_suite:test().'
+	${ERL} -pz ebin -pz ebin_tests -b start_sasl -noshell -s init stop -eval 'test_suite:test().'
 
 ebin:
 	mkdir ebin

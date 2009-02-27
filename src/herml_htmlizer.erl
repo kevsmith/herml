@@ -1,6 +1,6 @@
 -module(herml_htmlizer).
 
--export([render/1, render/2]).
+-export([render/1, render/2, render/3]).
 
 -define(RESERVED_TAG_ATTRS, [tag_name, singleton]).
 
@@ -13,96 +13,108 @@
 -define(DOCTYPE_FRAMESET, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n").
 
 render(Template) ->
-  render(Template, []).
+  render(Template, 0).
 
-render(Template, Env) ->
-  render(Template, Env, []).
+render(Template, Offset) ->
+  render(Template, [], Offset).
+
+render(Template, Env, Offset) ->
+  render(Template, Env, [], Offset).
 
 %% Internal functions
-render([{_, {iter, Match, {var_ref, List}}, Subtemplate}|T], Env, Accum) ->
-  Result = lists:map(fun(Item) -> unindent(render(Subtemplate, iteration_env(Match, Item, Env), [])) end, lookup_var(List, Env)),
-  render(T, Env, [Result|Accum]);
+render([{_, {iter, Match, {var_ref, List}}, Subtemplate}|T], Env, Accum, Offset) when is_list(Accum) ->
+  Result = lists:map(fun(Item) ->
+                         unindent(render(Subtemplate, iteration_env(Match, Item, Env), [], Offset)) end,
+                     lookup_var(List, Env)),
+  render(T, Env, [Result|Accum], Offset);
 
-render([{Depth, {tag_decl, Attrs}, []}|T], Env, Accum) ->
+render([{Depth, {tag_decl, Attrs}, []}|T], Env, Accum, Offset) when is_list(Accum) ->
   CloseTag = case detect_terminator(Attrs) of
     ">" ->
       render_inline_end_tag(Attrs);
     _ ->
       "\n"
   end,
-  render(T, Env, [render_inline_tag(Depth, Attrs, detect_terminator(Attrs), Env) ++ CloseTag|Accum]);
+  render(T, Env, [render_inline_tag(Depth, Attrs, detect_terminator(Attrs), Env, Offset) ++ CloseTag|Accum], Offset);
 
-render([{Depth, {tag_decl, Attrs}, Children}|T], Env, Accum) ->
-  B1 = render_tag(Depth, Attrs, ">", Env),
-  B2 = B1 ++ render(Children, Env),
-  render(T, Env, [B2 ++ render_end_tag(Depth, Attrs)|Accum]);
+render([{Depth, {tag_decl, Attrs}, Children}|T], Env, Accum, Offset) when is_list(Accum) ->
+  B1 = render_tag(Depth, Attrs, ">", Env, Offset),
+  B2 = B1 ++ render(Children, Env, Offset),
+  render(T, Env, [B2 ++ render_end_tag(Depth, Attrs, Offset)|Accum], Offset);
 
-render([{Depth, {var_ref, VarName}, []}|T], Env, Accum) ->
-  render(T, Env, [create_whitespace(Depth) ++ lookup_var(VarName, Env) ++ "\n"|Accum]);
+render([{Depth, {var_ref, VarName}, []}|T], Env, Accum, Offset) when is_list(Accum) ->
+  render(T, Env, [create_whitespace(Depth + Offset) ++ lookup_var(VarName, Env) ++ "\n"|Accum], Offset);
 
-render([{_, {var_ref, VarName}, Children}|T], Env, Accum) ->
-  render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env) | Accum]);
+render([{_, {var_ref, VarName}, Children}|T], Env, Accum, Offset) ->
+  render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env, Offset) | Accum], Offset);
 
-render([{Depth, {fun_call, Module, Fun, Args}, Children}|T], Env, Accum) ->
-  Result = create_whitespace(Depth) ++ invoke_fun(Module, Fun, Args, Env) ++ "\n",
-  render(T, Env, [Result ++ render(Children, Env) | Accum]);
+render([{Depth, {fun_call, Module, Fun, Args}, Children}|T], Env, Accum, Offset) ->
+  Result = create_whitespace(Depth + Offset) ++ invoke_fun(Module, Fun, Args, Env) ++ "\n",
+  render(T, Env, [Result ++ render(Children, Env, Offset) | Accum], Offset);
 
-render([{Depth, {fun_call_env, Module, Fun, Args}, Children}|T], Env, Accum) ->
-  {R, NewEnv} = invoke_fun_env(Module, Fun, Args, Env),
-  Result = create_whitespace(Depth) ++ R ++ "\n",
-  render(T, Env, [Result ++ render(Children, NewEnv) | Accum]);
+render([{Depth, {fun_call_env, Module, Fun, Args}, Children}|T], Env, Accum, Offset) ->
+  {R, NewEnv} = invoke_fun_env(Module, Fun, Args, Env, Depth + Offset),
+  WS = create_whitespace(Depth + Offset),
+  Result = case string:str(R, WS) of
+             0 ->
+               WS ++ R ++ "\n";
+             _ ->
+               R ++ "\n"
+           end,
+  render(T, Env, [Result ++ render(Children, NewEnv, Offset) | Accum], Offset);
 
-render([{_, {doctype, "Transitional", _}, []}|T], Env, Accum) ->
-  render(T, Env, [?DOCTYPE_TRANSITIONAL|Accum]);
+render([{_, {doctype, "Transitional", _}, []}|T], Env, Accum, Offset) ->
+  render(T, Env, [?DOCTYPE_TRANSITIONAL|Accum], Offset);
 
-render([{_, {doctype, "Strict", _}, []}|T], Env, Accum) ->
-  render(T, Env, [?DOCTYPE_STRICT|Accum]);
+render([{_, {doctype, "Strict", _}, []}|T], Env, Accum, Offset) ->
+  render(T, Env, [?DOCTYPE_STRICT|Accum], Offset);
 
-render([{_, {doctype, "1.1", _}, []}|T], Env, Accum) ->
-  render(T, Env, [?DOCTYPE_HTML11|Accum]);
+render([{_, {doctype, "1.1", _}, []}|T], Env, Accum, Offset) ->
+  render(T, Env, [?DOCTYPE_HTML11|Accum], Offset);
 
-render([{_, {doctype, "XML", Encoding}, []}|T], Env, Accum) when is_list(Encoding) andalso Encoding /= [] ->
-  render(T, Env, lists:reverse(?DOCTYPE_XML_START ++ Encoding ++ ?DOCTYPE_XML_END) ++ Accum);
+render([{_, {doctype, "XML", Encoding}, []}|T], Env, Accum, Offset) when is_list(Encoding),
+                                                                         Encoding /= [] ->
+  render(T, Env, lists:reverse(?DOCTYPE_XML_START ++ Encoding ++ ?DOCTYPE_XML_END) ++ Accum, Offset);
 
-render([{_, {doctype, "XML", []}, []}|T], Env, Accum) ->
-  render(T, Env, [?DOCTYPE_XML|Accum]);
+render([{_, {doctype, "XML", []}, []}|T], Env, Accum, Offset) ->
+  render(T, Env, [?DOCTYPE_XML|Accum], Offset);
 
-render([{_, {doctype, "Frameset", _}, []}|T], Env, Accum) ->
-  render(T, Env, [?DOCTYPE_FRAMESET|Accum]);
+render([{_, {doctype, "Frameset", _}, []}|T], Env, Accum, Offset) ->
+  render(T, Env, [?DOCTYPE_FRAMESET|Accum], Offset);
 
-render([{_, Text, []}|T], Env, Accum) ->
-  render(T, Env, [render_text(Text) ++ "\n"|Accum]);
+render([{Depth, Text, []}|T], Env, Accum, Offset) ->
+  render(T, Env, [render_text(Text, Depth, Offset) ++ "\n"|Accum], Offset);
 
-render([{_, Text, Children}|T], Env, Accum) ->
-  render(T, Env, [render_text(Text) ++ render(Children, Env)|Accum]);
+render([{Depth, Text, Children}|T], Env, Accum, Offset) ->
+  render(T, Env, [render_text(Text, Depth, Offset) ++ render(Children, Env, Offset)|Accum], Offset);
 
-render([], _Env, Accum) ->
+render([], _Env, Accum, _Offset) ->
   lists:reverse(Accum).
 
-render_text({text, _, Text}) ->
-  Text.
+render_text({text, _, Text}, Depth, Offset) ->
+  create_whitespace(Depth + Offset) ++ string:strip(Text).
 
-render_tag(Depth, Attrs, Terminator, Env) ->
-  create_whitespace(Depth) ++ "<" ++
+render_tag(Depth, Attrs, Terminator, Env, Offset) ->
+  create_whitespace(Depth + Offset) ++ "<" ++
     proplists:get_value(tag_name, Attrs) ++
-    render_attrs(Attrs, Env) ++
+    render_attrs(Attrs, Env, Depth + Offset) ++
     Terminator ++ "\n".
 
-render_inline_tag(Depth, Attrs, Terminator, Env) ->
-  create_whitespace(Depth) ++ "<" ++
+render_inline_tag(Depth, Attrs, Terminator, Env, Offset) ->
+  create_whitespace(Depth + Offset) ++ "<" ++
     proplists:get_value(tag_name, Attrs) ++
-    render_attrs(Attrs, Env) ++
+    render_attrs(Attrs, Env, Depth + Offset) ++
     Terminator.
 
-render_end_tag(Depth, Attrs) ->
-  create_whitespace(Depth) ++ "</" ++ proplists:get_value(tag_name, Attrs) ++ ">\n".
+render_end_tag(Depth, Attrs, Offset) ->
+  create_whitespace(Depth + Offset) ++ "</" ++ proplists:get_value(tag_name, Attrs) ++ ">\n".
 
 render_inline_end_tag(Attrs) ->
   "</" ++ proplists:get_value(tag_name, Attrs) ++ ">\n".
 
-render_attrs(Attrs, Env) ->
+render_attrs(Attrs, Env, TotalDepth) ->
   lists:foldl(fun(Attr, Accum) ->
-                render_attr(Attr, Env, Accum) end, "",
+                render_attr(Attr, Env, Accum, TotalDepth) end, "",
               lists:sort(consolidate_classes(Attrs))).
 
 create_whitespace(Depth) ->
@@ -113,16 +125,16 @@ create_whitespace(0, Accum) ->
 create_whitespace(Depth, Accum) ->
   create_whitespace(Depth - 1, ["  "|Accum]).
 
-render_attr({fun_call, Module, Fun, Args}, Env, Accum) ->
-  render_attrs(invoke_fun(Module, Fun, Args, Env), Env) ++ Accum;
+render_attr({fun_call, Module, Fun, Args}, Env, Accum, TotalDepth) ->
+  render_attrs(invoke_fun(Module, Fun, Args, Env), Env, TotalDepth) ++ Accum;
 
-render_attr({fun_call_env, Module, Fun, Args}, Env, Accum) ->
-  {R, NewEnv} = invoke_fun_env(Module, Fun, Args, Env),
-  render_attrs(R, NewEnv) ++ Accum;
+render_attr({fun_call_env, Module, Fun, Args}, Env, Accum, TotalDepth) ->
+  {R, NewEnv} = invoke_fun_env(Module, Fun, Args, Env, TotalDepth),
+  render_attrs(R, NewEnv, TotalDepth) ++ Accum;
 
-render_attr({Name, {var_ref, VarName}}, Env, Accum) ->
+render_attr({Name, {var_ref, VarName}}, Env, Accum, _TotalDepth) ->
   Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ lookup_var(VarName, Env) ++ "\"";
-render_attr({Name, Value}, _Env, Accum) ->
+render_attr({Name, Value}, _Env, Accum, _TotalDepth) ->
   case lists:member(Name, ?RESERVED_TAG_ATTRS) of
     true ->
       Accum;
@@ -134,8 +146,9 @@ invoke_fun(Module, Fun, Args, Env) ->
   FinalArgs = resolve_args(Args, Env),
   apply(Module, Fun, FinalArgs).
 
-invoke_fun_env(Module, Fun, Args, Env) ->
-  FinalArgs = resolve_args(Args, Env) ++ [Env],
+invoke_fun_env(Module, Fun, Args, Env, TotalDepth) ->
+  FinalEnv = [{"__herml_depth__", TotalDepth}|Env],
+  FinalArgs = resolve_args(Args, Env) ++ [FinalEnv],
   apply(Module, Fun, FinalArgs).
 
 resolve_args(Args, Env) ->
@@ -191,7 +204,8 @@ iteration_env(_,_,Env) -> Env.
 
 iteration_env_list([Match|Matches], [Item|Items], Env) ->
   iteration_env_list(Matches, Items, iteration_env(Match, Item, Env));
-iteration_env_list(Matches, [], _Env) when is_list(Matches) andalso length(Matches) =/= 0 ->
+iteration_env_list(Matches, [], _Env) when is_list(Matches),
+                                           length(Matches) > 0 ->
   throw(bad_match);
 iteration_env_list([], [], Env) ->
   Env;
