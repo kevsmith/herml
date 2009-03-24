@@ -1,7 +1,7 @@
 Definitions.
 
 D = [0-9]
-STRCHAR = [a-z|A-Z|0-9|_]
+IDENT = [a-z|A-Z|0-9|_|-]
 
 Rules.
 
@@ -14,7 +14,7 @@ _           :  {token, {underscore, TokenLine, TokenChars}}.
 '(\\\^.|\\.|[^'])*' :
   S = lists:sublist(TokenChars, 2, TokenLen - 2),
   {token, {string, TokenLine, S}}.
-{STRCHAR}+  :  {token, {chr, TokenLine, TokenChars}}.
+{IDENT}+    :  {token, {chr, TokenLine, TokenChars}}.
 {           :  {token, {lcurly, TokenLine, TokenChars}}.
 }           :  {token, {rcurly, TokenLine, TokenChars}}.
 \[          :  {token, {lbrace, TokenLine, TokenChars}}.
@@ -30,6 +30,6 @@ _           :  {token, {underscore, TokenLine, TokenChars}}.
 |           :  {token, {pipe, TokenLine, TokenChars}}.
 <           :  {token, {lt, TokenLine, TokenChars}}.
 >           :  {token, {gt, TokenLine, TokenChars}}.
-\s          :  {token, {space, TokenLine, TokenChars}}.
+\s+         :  {token, {space, TokenLine, TokenChars}}.
 
 Erlang code.

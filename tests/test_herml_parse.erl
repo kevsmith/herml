@@ -139,6 +139,20 @@ fun_call_env_test_() ->
    ?_assertMatch({ok, {fun_call_env, hello, world, [{string, "foo"}, {number, 1}]}}, lex_and_parse("@@hello:world('foo', 1)")),
    ?_assertMatch({ok, {fun_call_env, hello, world, [{var_ref, "Name"}]}}, lex_and_parse("@@hello:world(@Name)"))].
 
+dashed_names_test_() ->
+  [?_assertMatch({ok, {tag_decl, [{tag_name, "foo-bar"}]}}, lex_and_parse("%foo-bar")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "meta"}, {'http-equiv', "Content-Type"}]}}, lex_and_parse("%meta[{http-equiv, 'Content-Type'}]"))].
+
+spacing_insensitivity_test_() ->
+  [?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, "row"}]}}, lex_and_parse("%div[ {class, 'row'}]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, "row"}]}}, lex_and_parse("%div[     {class, 'row'}]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, "row"}]}}, lex_and_parse("%div[ {class, 'row'} ]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, "row"}]}}, lex_and_parse("%div[{class, 'row'}     ]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, "row"}]}}, lex_and_parse("%div[{class,    'row'}]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, "row"}, {id, "foo"}]}}, lex_and_parse("%div[{class,'row'},     {id,'foo'}  ]")),
+   ?_assertMatch({ok, {fun_call, foo, bar, []}}, lex_and_parse("@foo:bar(  )")),
+   ?_assertMatch({ok, {fun_call, foo, bar, [{string, "baz"}]}}, lex_and_parse("@foo:bar( 'baz')")),
+   ?_assertMatch({ok, {fun_call, foo, bar, [{string, "baz"}]}}, lex_and_parse("@foo:bar('baz' )"))].
 
 lex_and_parse(Text) ->
   {ok, T, _} = herml_scan:string(Text),
