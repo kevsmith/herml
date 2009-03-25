@@ -43,6 +43,8 @@ render_test_() ->
    check("tests/examples/sort_attributes"),
    check("tests/examples/style_attribute"),
    check("tests/examples/dashed_attrs"),
+   check("tests/examples/string_and_number_attrs"),
+   check("tests/examples/variable_attrs", [{"Key", "class"}, {"Value", "awesome"}]),
    check("tests/examples/simple_loop", [{"Users", ["kevsmith", "seancribbs"]}]),
    check("tests/examples/loop_with_ignores", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),
    check("tests/examples/structured_loop", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}])].

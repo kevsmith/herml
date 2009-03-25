@@ -3,7 +3,7 @@ Nonterminals
     tag_decl
       tag_stem
         shortcuts id_attr class_attr class_list
-        attr_list attrs attr attr_value
+        attr_list attrs attr attr_key attr_value
     var_ref
     fun_call
       param param_list param_value
@@ -15,7 +15,7 @@ Nonterminals
     list_open list_close
     tuple_open tuple_close
     params_open params_close
-    name name_in_list.
+    name.
 
 Terminals
   number chr string
@@ -129,10 +129,17 @@ attrs -> attr : ['$1'].
 attrs -> attr list_sep attrs : ['$1'] ++ '$3'.
 
 attr -> attr space : '$1'.
-attr -> tuple_open name_in_list list_sep attr_value tuple_close : {name_to_atom('$2'), '$4'}.
+attr -> tuple_open attr_key list_sep attr_value tuple_close : {'$2', '$4'}.
+
+attr_key -> attr_key space : '$1'.
+attr_key -> string : list_to_atom(unwrap('$1')).
+attr_key -> name : name_to_atom('$1').
+attr_key -> var_ref : '$1'.
 
 attr_value -> attr_value space : '$1'.
 attr_value -> string : unwrap('$1').
+attr_value -> number : integer_to_list(unwrap('$1')).
+attr_value -> name : unwrap('$1').
 attr_value -> var_ref : '$1'.
 
 %% Space insensitive parens
@@ -155,9 +162,6 @@ list_sep -> comma space : '$1'.
 list_sep -> comma : '$1'.
 
 %% Simple identifiers / atoms
-name_in_list -> name space : '$1'.
-name_in_list -> name : '$1'.
-
 name -> chr : {name, unwrap('$1')}.
 
 Erlang code.

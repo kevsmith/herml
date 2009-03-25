@@ -133,14 +133,19 @@ render_attr({fun_call_env, Module, Fun, Args}, Env, Accum, TotalDepth) ->
   render_attrs(R, NewEnv, TotalDepth) ++ Accum;
 
 render_attr({Name, {var_ref, VarName}}, Env, Accum, _TotalDepth) ->
-  Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ lookup_var(VarName, Env) ++ "\"";
-render_attr({Name, Value}, _Env, Accum, _TotalDepth) ->
+  Accum ++ " " ++ render_attr_key(Name, Env) ++ "=\"" ++ lookup_var(VarName, Env) ++ "\"";
+render_attr({Name, Value}, Env, Accum, _TotalDepth) ->
   case lists:member(Name, ?RESERVED_TAG_ATTRS) of
     true ->
       Accum;
     false ->
-      Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ Value ++ "\""
+      Accum ++ " " ++ render_attr_key(Name, Env) ++ "=\"" ++ Value ++ "\""
   end.
+
+render_attr_key({var_ref, Value}, Env) ->
+  lookup_var(Value, Env);
+render_attr_key(Name, _Env) ->
+  atom_to_list(Name).
 
 invoke_fun(Module, Fun, Args, Env) ->
   FinalArgs = resolve_args(Args, Env),
