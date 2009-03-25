@@ -154,6 +154,12 @@ spacing_insensitivity_test_() ->
    ?_assertMatch({ok, {fun_call, foo, bar, [{string, "baz"}]}}, lex_and_parse("@foo:bar( 'baz')")),
    ?_assertMatch({ok, {fun_call, foo, bar, [{string, "baz"}]}}, lex_and_parse("@foo:bar('baz' )"))].
 
+attr_fun_call_test_() ->
+  [?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {{fun_call, foo, bar, []}, "awesome"}]}}, lex_and_parse("%div[{@foo:bar, 'awesome'}]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, {fun_call, foo, bar, []}}]}}, lex_and_parse("%div[{class, @foo:bar}]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {{fun_call_env, foo, bar, []}, "awesome"}]}}, lex_and_parse("%div[{@@foo:bar, 'awesome'}]")),
+   ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, {fun_call_env, foo, bar, []}}]}}, lex_and_parse("%div[{class, @@foo:bar}]"))].
+
 lex_and_parse(Text) ->
   {ok, T, _} = herml_scan:string(Text),
   herml_parse:parse(T).

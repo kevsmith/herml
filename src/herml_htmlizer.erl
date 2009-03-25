@@ -113,10 +113,42 @@ render_inline_end_tag(Attrs) ->
   "</" ++ proplists:get_value(tag_name, Attrs) ++ ">\n".
 
 render_attrs(Attrs, Env, TotalDepth) ->
-  lists:foldl(fun(Attr, Accum) ->
-                render_attr(Attr, Env, Accum, TotalDepth) end, "",
-              lists:sort(consolidate_classes(Attrs))).
+  EvalAttrs = evaluate_attributes(Attrs, Env, TotalDepth),
+  lists:foldl(fun render_attr/2, "", lists:sort(consolidate_classes(EvalAttrs))).
 
+evaluate_attributes(Attrs, Env, TotalDepth) ->
+  evaluate_attributes(Attrs, Env, TotalDepth, []).
+evaluate_attributes([], _Env, _TotalDepth, Accum) ->
+  lists:reverse(Accum);
+evaluate_attributes([{fun_call, Module, Fun, Args}|Attrs], Env, TotalDepth, Accum) ->
+  NewAttrs = invoke_fun(Module, Fun, Args, Env),
+  evaluate_attributes(Attrs, Env, TotalDepth, NewAttrs ++ Accum);
+evaluate_attributes([{fun_call_env, Module, Fun, Args}|Attrs], Env, TotalDepth, Accum) ->
+  {NewAttrs, _NewEnv} = invoke_fun_env(Module, Fun, Args, Env, TotalDepth),
+  evaluate_attributes(Attrs, Env, TotalDepth, NewAttrs ++ Accum);
+evaluate_attributes([{Key, Value}|Attrs], Env, TotalDepth, Accum) ->
+  evaluate_attributes(Attrs, Env, TotalDepth,
+    [{evaluate_attr_key(Key, Env, TotalDepth), 
+      evaluate_attr_value(Value, Env, TotalDepth)}|Accum]);
+evaluate_attributes([_|Attrs], Env, TotalDepth, Accum) ->
+  evaluate_attributes(Attrs, Env, TotalDepth, Accum). %% Throw out any junk for now
+  
+evaluate_attr_key(Key, Env, TotalDepth) ->
+  case evaluate_attr_value(Key, Env, TotalDepth) of
+    X when is_atom(X) -> X;
+    Else -> list_to_atom(Else)
+  end.
+
+evaluate_attr_value({var_ref, Value}, Env, _TotalDepth) ->
+  lookup_var(Value, Env);
+evaluate_attr_value({fun_call, Module, Fun, Args}, Env, _TotalDepth) ->
+  invoke_fun(Module, Fun, Args, Env);
+evaluate_attr_value({fun_call_env, Module, Fun, Args}, Env, TotalDepth) ->
+  {R, _} = invoke_fun_env(Module, Fun, Args, Env, TotalDepth),
+  R;
+evaluate_attr_value(Value, _Env, _TotalDepth) ->
+  Value.
+  
 create_whitespace(Depth) ->
   create_whitespace(Depth, []).
 
@@ -125,27 +157,13 @@ create_whitespace(0, Accum) ->
 create_whitespace(Depth, Accum) ->
   create_whitespace(Depth - 1, ["  "|Accum]).
 
-render_attr({fun_call, Module, Fun, Args}, Env, Accum, TotalDepth) ->
-  render_attrs(invoke_fun(Module, Fun, Args, Env), Env, TotalDepth) ++ Accum;
-
-render_attr({fun_call_env, Module, Fun, Args}, Env, Accum, TotalDepth) ->
-  {R, NewEnv} = invoke_fun_env(Module, Fun, Args, Env, TotalDepth),
-  render_attrs(R, NewEnv, TotalDepth) ++ Accum;
-
-render_attr({Name, {var_ref, VarName}}, Env, Accum, _TotalDepth) ->
-  Accum ++ " " ++ render_attr_key(Name, Env) ++ "=\"" ++ lookup_var(VarName, Env) ++ "\"";
-render_attr({Name, Value}, Env, Accum, _TotalDepth) ->
+render_attr({Name, Value}, Accum) ->
   case lists:member(Name, ?RESERVED_TAG_ATTRS) of
     true ->
       Accum;
     false ->
-      Accum ++ " " ++ render_attr_key(Name, Env) ++ "=\"" ++ Value ++ "\""
+      Accum ++ " " ++ atom_to_list(Name) ++ "=\"" ++ Value ++ "\""
   end.
-
-render_attr_key({var_ref, Value}, Env) ->
-  lookup_var(Value, Env);
-render_attr_key(Name, _Env) ->
-  atom_to_list(Name).
 
 invoke_fun(Module, Fun, Args, Env) ->
   FinalArgs = resolve_args(Args, Env),

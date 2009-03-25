@@ -7,6 +7,7 @@
 -export([default_attr/1]).
 -export([emit_single/1, emit_multi/2]).
 -export([emit_single/2, emit_multi/3]).
+-export([attr_key/0, attr_key/1, attr_value/0, attr_value/1]).
 
 default_attr(Env) ->
   {[{color, "red"},
@@ -24,7 +25,11 @@ emit_single(Arg, Env) ->
 emit_multi(Arg1, Arg2, Env) ->
   {[Arg1 ++ "!", Arg2], Env}.
 
+attr_key() -> "class".
+attr_key(Key) when is_list(Key) -> "key" ++ Key.
 
+attr_value() -> "awesome".
+attr_value(Value) when is_list(Value) -> "value" ++ Value.
 
 render_test_() ->
   [check("tests/examples/hello_world"),
@@ -44,6 +49,7 @@ render_test_() ->
    check("tests/examples/style_attribute"),
    check("tests/examples/dashed_attrs"),
    check("tests/examples/string_and_number_attrs"),
+   check("tests/examples/funcall_attrs", [{"Key", "class"}, {"Value", "awesome"}]),
    check("tests/examples/variable_attrs", [{"Key", "class"}, {"Value", "awesome"}]),
    check("tests/examples/simple_loop", [{"Users", ["kevsmith", "seancribbs"]}]),
    check("tests/examples/loop_with_ignores", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),

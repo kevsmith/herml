@@ -1,0 +1,4 @@
+%div[{@test_herml_htmlizer:attr_key(), 'awesome'}]
+%div[{class, @test_herml_htmlizer:attr_value()}]
+%div[{@test_herml_htmlizer:attr_key('class'), 'awesome'}]
+%div[{class, @test_herml_htmlizer:attr_value('awesome')}]

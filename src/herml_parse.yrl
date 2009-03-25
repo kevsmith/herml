@@ -135,12 +135,14 @@ attr_key -> attr_key space : '$1'.
 attr_key -> string : list_to_atom(unwrap('$1')).
 attr_key -> name : name_to_atom('$1').
 attr_key -> var_ref : '$1'.
+attr_key -> fun_call : '$1'.
 
 attr_value -> attr_value space : '$1'.
 attr_value -> string : unwrap('$1').
 attr_value -> number : integer_to_list(unwrap('$1')).
 attr_value -> name : unwrap('$1').
 attr_value -> var_ref : '$1'.
+attr_value -> fun_call : '$1'.
 
 %% Space insensitive parens
 params_open -> lparen space : '$1'.
