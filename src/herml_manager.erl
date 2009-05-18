@@ -9,7 +9,7 @@
 
 %% API
 -export([start_link/2, start_link/3, execute_template/2, execute_template/3]).
--export([execute_template/4]).
+-export([execute_template/4, shutdown/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -42,6 +42,8 @@ execute_template(ManagerName, TemplatePath, Env) ->
 execute_template(ManagerName, TemplatePath, Env, Offset) ->
   gen_server:call(ManagerName, {exec_template, TemplatePath, Env, Offset}).
 
+shutdown(ManagerName) ->
+  gen_server:cast(ManagerName, shutdown).
 
 init([EtsTableName, RootDir, Options]) ->
   case verify_dir(RootDir) of
@@ -89,6 +91,8 @@ handle_call({exec_template, TemplatePath, Env, Offset}, From, State) ->
 handle_call(_Request, _From, State) ->
   {reply, ignored, State}.
 
+handle_cast(shutdown, State) ->
+  {stop, normal, State};
 handle_cast(_Msg, State) ->
   {noreply, State}.
 

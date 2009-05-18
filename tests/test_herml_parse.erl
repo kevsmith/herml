@@ -160,6 +160,10 @@ attr_fun_call_test_() ->
    ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {{fun_call_env, foo, bar, []}, "awesome"}]}}, lex_and_parse("%div[{@@foo:bar, 'awesome'}]")),
    ?_assertMatch({ok, {tag_decl, [{tag_name, "div"}, {class, {fun_call_env, foo, bar, []}}]}}, lex_and_parse("%div[{class, @@foo:bar}]"))].
 
+var_ref_test_() ->
+  [?_assertMatch({ok, {var_ref, "Struct", 2}}, lex_and_parse("@Struct[2]")),
+   ?_assertMatch({ok, {var_ref, "Struct"}}, lex_and_parse("@Struct"))].
+
 lex_and_parse(Text) ->
   {ok, T, _} = herml_scan:string(Text),
   herml_parse:parse(T).

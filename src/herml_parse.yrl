@@ -58,6 +58,7 @@ doctype_name_elem -> number : number_to_list('$1').
 
 %% Variable reference for emitting, iterating, and passing to funcalls
 var_ref -> at name : {var_ref, unwrap('$2')}.
+var_ref -> at name lbrace number rbrace : {var_ref, unwrap('$2'), unwrap('$4')}.
 
 %% Iterator
 iter -> dash space list_open iter_item list_close space lt dash space var_ref : {iter, '$4', '$10'}.

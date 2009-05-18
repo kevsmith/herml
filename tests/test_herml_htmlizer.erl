@@ -53,15 +53,15 @@ render_test_() ->
    check("tests/examples/variable_attrs", [{"Key", "class"}, {"Value", "awesome"}]),
    check("tests/examples/simple_loop", [{"Users", ["kevsmith", "seancribbs"]}]),
    check("tests/examples/loop_with_ignores", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),
-   check("tests/examples/structured_loop", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}])].
+   check("tests/examples/structured_loop", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),
+   check("tests/examples/tuple_access", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}])].
 
-sub_template_test_() ->
-  [fun() ->
-       {ok, Pid} = herml_manager:start_link(foo, "tests/examples"),
-       {ok, Rendered} = herml_manager:execute_template(foo, "main.herml"),
-       {ok, PreRendered} = file:read_file("tests/examples/main.render"),
-       exit(Pid, shutdown),
-       ?assertEqual(binary_to_list(PreRendered), lists:flatten(Rendered)) end].
+sub_template_test() ->
+  {ok, Pid} = herml_manager:start_link(foo, "tests/examples"),
+  {ok, Rendered} = herml_manager:execute_template(foo, "main.herml"),
+  {ok, PreRendered} = file:read_file("tests/examples/main.render"),
+  herml_manager:shutdown(foo),
+  ?assertEqual(binary_to_list(PreRendered), lists:flatten(Rendered)).
 
 iteration_match_test_() ->
   [
