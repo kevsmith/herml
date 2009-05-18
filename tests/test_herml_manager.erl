@@ -8,7 +8,7 @@
 
 dev_mode_test_() ->
   {setup, fun() -> herml_manager:start_link(?DEFAULT_MGR, "tests/examples", [{development, true}]) end,
-   fun({ok, P}) -> herml_manager:shutdown(?DEFAULT_MGR),
+   fun({ok, _P}) -> herml_manager:shutdown(?DEFAULT_MGR),
                   file:delete("tests/examples/mutate.herml") end,
    [fun() ->
         file:write_file("tests/examples/mutate.herml", "hello, world"),
@@ -20,7 +20,7 @@ dev_mode_test_() ->
 
 prod_mode_test_() ->
   {setup, fun() -> herml_manager:start_link(?DEFAULT_MGR, "tests/examples") end,
-   fun({ok, P}) -> herml_manager:shutdown(?DEFAULT_MGR),
+   fun({ok, _P}) -> herml_manager:shutdown(?DEFAULT_MGR),
                   file:delete("tests/examples/mutate.herml") end,
    [fun() ->
         file:write_file("tests/examples/mutate.herml", "hello, world"),

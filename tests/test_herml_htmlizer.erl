@@ -57,7 +57,7 @@ render_test_() ->
    check("tests/examples/tuple_access", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}])].
 
 sub_template_test() ->
-  {ok, Pid} = herml_manager:start_link(foo, "tests/examples"),
+  {ok, _Pid} = herml_manager:start_link(foo, "tests/examples"),
   {ok, Rendered} = herml_manager:execute_template(foo, "main.herml"),
   {ok, PreRendered} = file:read_file("tests/examples/main.render"),
   herml_manager:shutdown(foo),

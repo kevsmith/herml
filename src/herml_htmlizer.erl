@@ -69,9 +69,10 @@ render([{Depth, {var_ref, VarName}, []}|T], Env, Accum, Offset) when is_list(Acc
 render([{Depth, {var_ref, VarName, Element}, []}|T], Env, Accum, Offset) when is_list(Accum) ->
   render(T, Env, [create_whitespace(Depth + Offset) ++ format(element(Element, proplists:get_value(VarName, Env)), Env) ++ "\n"|Accum], Offset);
 
-% WTF - variables should not have nested contents
-render([{_, {var_ref, VarName}, Children}|T], Env, Accum, Offset) ->
-  render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env, Offset) | Accum], Offset);
+% TODO: CULL THIS LATER - NO TESTS AFFECTED
+% variables should not have nested contents
+% render([{_, {var_ref, VarName}, Children}|T], Env, Accum, Offset) ->
+%   render(T, Env, [lookup_var(VarName, Env) ++ render(Children, Env, Offset) | Accum], Offset);
 
 % Render a function call.
 render([{Depth, {fun_call, Module, Fun, Args}, Children}|T], Env, Accum, Offset) ->
@@ -119,9 +120,10 @@ render([{_, {doctype, "Frameset", _}, []}|T], Env, Accum, Offset) ->
 render([{Depth, Text, []}|T], Env, Accum, Offset) ->
   render(T, Env, [render_text(Text, Depth, Offset) ++ "\n"|Accum], Offset);
 
-% WTF - text should not have nested contents
-render([{Depth, Text, Children}|T], Env, Accum, Offset) ->
-  render(T, Env, [render_text(Text, Depth, Offset) ++ render(Children, Env, Offset)|Accum], Offset);
+% TODO: CULL THIS LATER - NO TESTS AFFECTED
+% text should not have nested contents
+% render([{Depth, Text, Children}|T], Env, Accum, Offset) ->
+%   render(T, Env, [render_text(Text, Depth, Offset) ++ render(Children, Env, Offset)|Accum], Offset);
 
 % End of buffer/nesting, reverse the result
 render([], _Env, Accum, _Offset) ->
