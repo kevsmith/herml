@@ -54,7 +54,8 @@ render_test_() ->
    check("tests/examples/simple_loop", [{"Users", ["kevsmith", "seancribbs"]}]),
    check("tests/examples/loop_with_ignores", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),
    check("tests/examples/structured_loop", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),
-   check("tests/examples/tuple_access", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}])].
+   check("tests/examples/tuple_access", [{"Users", [{1, "kevsmith"}, {2, "seancribbs"}]}]),
+   check("tests/examples/atom_value", [{"User", undefined}])].
 
 sub_template_test() ->
   {ok, _Pid} = herml_manager:start_link(foo, "tests/examples"),

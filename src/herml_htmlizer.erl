@@ -253,6 +253,8 @@ format(V, _Env) when is_integer(V) ->
   integer_to_list(V);
 format(V, _Env) when is_list(V) ->
   V;
+format(V, _Env) when is_atom(V) ->
+  atom_to_list(V);
 format(V, _Env) ->
   lists:flatten(io_lib:format("~p", V)).
 
