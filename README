@@ -27,18 +27,16 @@ Running tests:
 
 
 Using herml:
-The interface for herml is a work-in-progress currently. Eventually herml will
-sport a slick n' simple interface but, for now, its' a two step process:
 
-1) 'Compile' your herml template using herml_parser:
+1) Start up a herml_manager process for your template directory:
 
-1> CompiledTemplate = herml_parser:file("/path/to/template/file.herml").
+1> herml_manager:start_link(my_web_app,"/path/to/templates").
 
 Note: You can cache the compiled template and use it over and over.
 
-2) 'Execute' the compiled template using herml_htmlizer:
+2) Execute the template by calling the herml_manager process:
 
-2> Result = herml_htmlizer:render(CompiledTemplate, Env).
+2> Result = herml_manager:execute_template("file.herml", Env).
 
 Note: Env is a proplist containing the execution environment for the
 template. herml expects all variable names to be Erlang strings. For
@@ -46,8 +44,9 @@ example, here's a valid environment proplists: [{"UserName", "herml"}].
 
 The UserName variable would be referenced from herml as @UserName.
 
-Another note: herml_htmlizer returns iolists when it executes templates.
-This is for efficiency reasons. If you want to view the template output
-as a standard string, you can use the io module to flatten the iolist: 
+Another note: For efficiency reasons, herml_manager:execute_template/2,3,4 
+returns iolists when it executes templates. If you want to view the 
+template output as a standard string, you can use the io module 
+to flatten the iolist: 
 
 3> io:format("~s", [Result]). 
