@@ -1,7 +1,8 @@
 Welcome to herml, the Haml-like templating language!
 
 Building:
-1) Install leex 0.3 or greater. (Putting it in your $ERLANG_HOME/lib is best)
+1) Install leex 0.3 or greater. Putting it in your $ERLANG_HOME/lib is best.
+   leex is included with R13B01.
 2) Clone the herml repo from Github.
 3) Run make
 4) Put the herml/ebin directory somewhere on your code path:
@@ -32,7 +33,7 @@ Using herml:
 
 1> herml_manager:start_link(my_web_app,"/path/to/templates").
 
-Note: You can cache the compiled template and use it over and over.
+Note: herml_manager can cache the compiled template and use it over and over.
 
 2) Execute the template by calling the herml_manager process:
 
